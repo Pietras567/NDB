@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/NBD.main.iml" filepath="$PROJECT_DIR$/.idea/modules/NBD.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/NDB.NBD.main.iml" filepath="$PROJECT_DIR$/.idea/modules/NDB.NBD.main.iml" />
     </modules>
   </component>
 </project>

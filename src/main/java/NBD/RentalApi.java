@@ -1,6 +1,6 @@
 package NBD;
 
-public class Rental {
+public class RentalApi {
     public boolean oddaj() {
         try {
             boolean wypozyczony = true; ///todo pobiera z bazy, czy jest aktualnie wypozyczony

@@ -12,6 +12,10 @@ public class Car extends Vehicle {
         Seats = seats;
     }
 
+    public Car() {
+
+    }
+
     public int getSeats() {
         return Seats;
     }

@@ -12,6 +12,10 @@ public abstract class Vehicle {
     private int Weight;
     private int Power;
 
+    public Vehicle() {
+
+    }
+
 
     public String getName() {
         return Name;
