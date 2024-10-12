@@ -1,8 +1,7 @@
 package NBD;
 
 import jakarta.persistence.*;
-
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 public class Rent {
@@ -13,10 +12,10 @@ public class Rent {
     private long client_id;
     @Column(name = "vehicle_id", insertable = false, updatable = false)
     private long vehicle_id;
-    private LocalDate startDate;
-    private LocalDate endDate;
+    private LocalDateTime startDate;
+    private LocalDateTime endDate;
 
-    public Rent(long client_id, long vehicle_id, LocalDate startDate, LocalDate endDate) {
+    public Rent(long client_id, long vehicle_id, LocalDateTime startDate, LocalDateTime endDate) {
         this.client_id = client_id;
         this.vehicle_id = vehicle_id;
         this.startDate = startDate;
@@ -56,19 +55,19 @@ public class Rent {
         this.vehicle_id = vehicle_id;
     }
 
-    public LocalDate getStartDate() {
+    public LocalDateTime getStartDate() {
         return startDate;
     }
 
-    public void setStartDate(LocalDate startDate) {
+    public void setStartDate(LocalDateTime startDate) {
         this.startDate = startDate;
     }
 
-    public LocalDate getEndDate() {
+    public LocalDateTime getEndDate() {
         return endDate;
     }
 
-    public void setEndDate(LocalDate endDate) {
+    public void setEndDate(LocalDateTime endDate) {
         this.endDate = endDate;
     }
 

@@ -1,12 +1,13 @@
 package NBD;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class Main {
     public static void main(String[] args) {
         System.out.println("Witamy w CarRental!");
 
         DatabaseApi Api = new DatabaseApi();
+        RentalApi rApi = new RentalApi();
 
         // Dodawanie pojazdu
         Car car = new Car("Ferrari", 1700, 1200, 2);
@@ -36,9 +37,11 @@ public class Main {
 
         Api.addClient(client);
 
-        Rent rent = new Rent(client.getId(), car.getId(), LocalDate.now(), LocalDate.now().plusWeeks(2));
-        rent.setClient(Api.getClient(client.getId()));
-        rent.setVehicle(Api.getVehicle(client.getId()));
-        Api.addRent(rent);
+        rApi.wypozycz(car, client, 22);
+        System.out.println(LocalDateTime.now());
+
+        //rApi.wypozycz(Api.getVehicle(1), client);
+
+        rApi.oddaj(Api.getVehicle(16), Api.getClient(16));
     }
 }
