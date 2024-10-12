@@ -8,6 +8,8 @@
         <class>NBD.Car</class>
         <class>NBD.Motorbike</class>
         <class>NBD.Truck</class>
+        <class>NBD.Rent</class>
+        <class>NBD.Client</class>
         <properties>
 
             <property name="jakarta.persistence.jdbc.url"

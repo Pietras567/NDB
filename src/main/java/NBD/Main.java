@@ -1,5 +1,7 @@
 package NBD;
 
+import java.time.LocalDate;
+
 public class Main {
     public static void main(String[] args) {
         System.out.println("Witamy w CarRental!");
@@ -7,7 +9,7 @@ public class Main {
         DatabaseApi Api = new DatabaseApi();
 
         // Dodawanie pojazdu
-        Car car = new Car("Renault", 1200, 120, 4);
+        Car car = new Car("Ferrari", 1700, 1200, 2);
         Api.addVehicle(car);
 
         // Pobieranie pojazdu
@@ -17,10 +19,26 @@ public class Main {
         System.out.println("Retrieved Vehicle id: " + retrievedVehicle.getId());
 
         // Aktualizacja pojazdu
-        retrievedVehicle.setName("Updated Renault");
+        retrievedVehicle.setName("Tuned Ferrari");
         Api.updateVehicle(retrievedVehicle);
 
-        // Usuwanie pojazdu
-        Api.deleteVehicle(retrievedVehicle.getId());
+        System.out.println("");
+
+        // Pobieranie pojazdu zaktualizowanego
+        Vehicle retrievedVehicle2 = Api.getVehicle(car.getId());
+        System.out.println("Updated Retrieved Vehicle: " + retrievedVehicle2.getName());
+        System.out.println("Updated Retrieved Vehicle power: " + retrievedVehicle2.getPower());
+        System.out.println("Updated Retrieved Vehicle id: " + retrievedVehicle2.getId());
+
+        System.out.println("");
+
+        Client client = new Client("Adam", 22);
+
+        Api.addClient(client);
+
+        Rent rent = new Rent(client.getId(), car.getId(), LocalDate.now(), LocalDate.now().plusWeeks(2));
+        rent.setClient(Api.getClient(client.getId()));
+        rent.setVehicle(Api.getVehicle(client.getId()));
+        Api.addRent(rent);
     }
 }

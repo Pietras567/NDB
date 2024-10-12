@@ -1,5 +1,7 @@
 package NBD;
 import jakarta.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
@@ -7,10 +9,13 @@ import jakarta.persistence.*;
 public abstract class Vehicle {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int Id;
+    private long Id;
     private String Name;
     private int Weight;
     private int Power;
+
+    @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Rent> rents = new ArrayList<>();
 
     public Vehicle() {
 
@@ -33,7 +38,7 @@ public abstract class Vehicle {
         Weight = weight;
     }
 
-    public int getId() {
+    public long getId() {
         return Id;
     }
 
@@ -49,5 +54,13 @@ public abstract class Vehicle {
         Name = name;
         Weight = weight;
         Power = power;
+    }
+
+    public List<Rent> getRents() {
+        return rents;
+    }
+
+    public void setRents(List<Rent> rents) {
+        this.rents = rents;
     }
 }

@@ -11,7 +11,8 @@
         <mapping class="NBD.Car"/>
         <mapping class="NBD.Motorbike"/>
         <mapping class="NBD.Truck"/>
-
+        <mapping class="NBD.Rent"/>
+        <mapping class="NBD.Client"/>
     </session-factory>
 
 </hibernate-configuration>
