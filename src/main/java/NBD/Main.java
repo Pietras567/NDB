@@ -13,6 +13,8 @@ public class Main {
         // Pobieranie pojazdu
         Vehicle retrievedVehicle = Api.getVehicle(car.getId());
         System.out.println("Retrieved Vehicle: " + retrievedVehicle.getName());
+        System.out.println("Retrieved Vehicle power: " + retrievedVehicle.getPower());
+        System.out.println("Retrieved Vehicle id: " + retrievedVehicle.getId());
 
         // Aktualizacja pojazdu
         retrievedVehicle.setName("Updated Renault");
