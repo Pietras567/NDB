@@ -1,118 +1,123 @@
 package NBD;
 
-import java.sql.*;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
-import org.hibernate.cfg.Configuration;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.Persistence;
 
 public class DatabaseApi {
     private final Object lock = new Object();
 
-    private static SessionFactory factory;
+    private static EntityManagerFactory entityManagerFactory;
 
-    static {
-        factory = new Configuration().configure().buildSessionFactory();
+    private static void init() {
+        entityManagerFactory = Persistence.createEntityManagerFactory("default");
+    }
+
+    public DatabaseApi() {
+        init();
     }
 
     public void addVehicle(Vehicle vehicle) {
-        try (Session session = factory.openSession()) {
-            Transaction tx = session.beginTransaction();
-            session.save(vehicle);
-            tx.commit();
-        }
+        EntityManager em = entityManagerFactory.createEntityManager();
+        em.getTransaction().begin();
+        em.persist(vehicle);
+        em.getTransaction().commit();
+        em.close();
     }
 
     public Vehicle getVehicle(long id) {
-        try (Session session = factory.openSession()) {
-            return session.get(Vehicle.class, id);
-        }
+        EntityManager em = entityManagerFactory.createEntityManager();
+        em.getTransaction().begin();
+        Vehicle vehicle = em.find(Vehicle.class, id);
+        em.getTransaction().commit();
+        em.close();
+        return vehicle;
     }
 
     public void updateVehicle(Vehicle vehicle) {
-        try (Session session = factory.openSession()) {
-            Transaction tx = session.beginTransaction();
-            session.update(vehicle);
-            tx.commit();
-        }
+        EntityManager em = entityManagerFactory.createEntityManager();
+        em.getTransaction().begin();
+        em.merge(vehicle);
+        em.getTransaction().commit();
+        em.close();
     }
 
     public void deleteVehicle(int id) {
-        try (Session session = factory.openSession()) {
-            Transaction tx = session.beginTransaction();
-            Vehicle vehicle = session.get(Vehicle.class, id);
-            if (vehicle != null) {
-                session.delete(vehicle);
-            }
-            tx.commit();
-        }
+        EntityManager em = entityManagerFactory.createEntityManager();
+        em.getTransaction().begin();
+        Vehicle vehicle = em.find(Vehicle.class, id);
+        em.remove(vehicle);
+        em.getTransaction().commit();
+        em.close();
     }
 
     public void addClient(Client client) {
-        try (Session session = factory.openSession()) {
-            Transaction tx = session.beginTransaction();
-            session.save(client);
-            tx.commit();
-        }
+        EntityManager em = entityManagerFactory.createEntityManager();
+        em.getTransaction().begin();
+        em.persist(client);
+        em.getTransaction().commit();
+        em.close();
     }
 
     public Client getClient(long id) {
-        try (Session session = factory.openSession()) {
-            return session.get(Client.class, id);
-        }
+        EntityManager em = entityManagerFactory.createEntityManager();
+        em.getTransaction().begin();
+        Client client = em.find(Client.class, id);
+        em.getTransaction().commit();
+        em.close();
+        return client;
     }
 
     public void updateClient(Client client) {
-        try (Session session = factory.openSession()) {
-            Transaction tx = session.beginTransaction();
-            session.update(client);
-            tx.commit();
-        }
+        EntityManager em = entityManagerFactory.createEntityManager();
+        em.getTransaction().begin();
+        em.merge(client);
+        em.getTransaction().commit();
+        em.close();
     }
 
     public void deleteClient(long id) {
-        try (Session session = factory.openSession()) {
-            Transaction tx = session.beginTransaction();
-            Client client = session.get(Client.class, id);
-            if (client != null) {
-                session.delete(client);
-            }
-            tx.commit();
-        }
+        EntityManager em = entityManagerFactory.createEntityManager();
+        em.getTransaction().begin();
+        Client client = em.find(Client.class, id);
+        em.remove(client);
+        em.getTransaction().commit();
+        em.close();
     }
 
 
     public void addRent(Rent rent) {
-        try (Session session = factory.openSession()) {
-            Transaction tx = session.beginTransaction();
-            session.save(rent);
-            tx.commit();
-        }
+        EntityManager em = entityManagerFactory.createEntityManager();
+        em.getTransaction().begin();
+        em.persist(rent);
+        em.getTransaction().commit();
+        em.close();
     }
 
     public Rent getRent(long id) {
-        try (Session session = factory.openSession()) {
-            return session.get(Rent.class, id);
-        }
+        EntityManager em = entityManagerFactory.createEntityManager();
+        em.getTransaction().begin();
+        Rent rent = em.find(Rent.class, id);
+        em.getTransaction().commit();
+        em.close();
+        return rent;
     }
 
     public void updateRent(Rent rent) {
-        try (Session session = factory.openSession()) {
-            Transaction tx = session.beginTransaction();
-            session.update(rent);
-            tx.commit();
-        }
+        EntityManager em = entityManagerFactory.createEntityManager();
+        em.getTransaction().begin();
+        em.merge(rent);
+        em.getTransaction().commit();
+        em.close();
     }
 
     public void deleteRent(long id) {
-        try (Session session = factory.openSession()) {
-            Transaction tx = session.beginTransaction();
-            Rent rent = session.get(Rent.class, id);
-            if (rent != null) {
-                session.delete(rent);
-            }
-            tx.commit();
-        }
+        EntityManager em = entityManagerFactory.createEntityManager();
+        em.getTransaction().begin();
+        Rent rent = em.find(Rent.class, id);
+        em.remove(rent);
+        em.getTransaction().commit();
+        em.close();
     }
 
 }
