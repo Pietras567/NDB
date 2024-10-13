@@ -20,18 +20,22 @@
             <property name="jakarta.persistence.jdbc.password"
                       value="nbdpassword"/>
 
-            <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"/>
+            <!--<property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"/>-->
 
-            <property name="hibernate.agroal.maxSize"
-                      value="20"/>
+            <!--<property name="hibernate.agroal.maxSize"
+                      value="20"/>-->
 
-            <property name="hibernate.show_sql" value="true"/>
+            <property name="hibernate.show_sql" value="false"/>
             <property name="hibernate.format_sql" value="true"/>
             <property name="hibernate.highlight_sql" value="true"/>
-
             <property name="hibernate.hbm2ddl.auto" value="update"/>
 
 
+            <property name="hibernate.connection.driver_class" value="org.postgresql.Driver"/>
+            <property name="hibernate.hikari.dataSource.url" value="jdbc:postgresql://localhost:5432/nbddb"/>
+            <property name="hibernate.hikari.dataSource.user" value="nbd"/>
+            <property name="hibernate.hikari.dataSource.password" value="nbdpassword"/>
+            <property name="hibernate.hikari.maximumPoolSize" value="20"/>
         </properties>
     </persistence-unit>
 </persistence>
