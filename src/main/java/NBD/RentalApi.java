@@ -2,6 +2,7 @@ package NBD;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -31,10 +32,14 @@ public class RentalApi {
             }
 
             if(wypozyczony) {
-                DatabaseApi databaseApi = new DatabaseApi();
-                rent.setEndDate(LocalDateTime.now());
-                databaseApi.updateRent(rent);
-
+                if(rent.getClient().getId() == client.getId()) {
+                    DatabaseApi databaseApi = new DatabaseApi();
+                    rent.setEndDate(LocalDateTime.now());
+                    databaseApi.updateRent(rent);
+                } else {
+                    System.out.println("Pojazd byl wypozyczony przez innego klienta. Nie mozesz go zwrocic.");
+                    return false;
+                }
             } else {
                 System.out.println("nie zwracamy");
                 return false;
@@ -82,5 +87,27 @@ public class RentalApi {
             return false;
         }
         return true;
+    }
+
+    public List<Vehicle> getAllVehicles() {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        String jpql = "SELECT r FROM Vehicle r";
+        TypedQuery<Vehicle> query = entityManager.createQuery(jpql, Vehicle.class);
+        return query.getResultList();
+    }
+
+    public List<Rent> getAllRents() {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        String jpql = "SELECT r FROM Rent r";
+        TypedQuery<Rent> query = entityManager.createQuery(jpql, Rent.class);
+        return query.getResultList();
+    }
+
+
+    public List<Client> getAllClients() {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        String jpql = "SELECT r FROM Client r";
+        TypedQuery<Client> query = entityManager.createQuery(jpql, Client.class);
+        return query.getResultList();
     }
 }

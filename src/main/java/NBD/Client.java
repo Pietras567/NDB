@@ -51,4 +51,14 @@ public class Client {
     public void setRents(List<Rent> rents) {
         this.rents = rents;
     }
+
+    @Override
+    public String toString() {
+        return "Client{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", age=" + age +
+                ", rents=" + rents +
+                '}';
+    }
 }

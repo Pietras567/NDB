@@ -1,14 +1,14 @@
 package NBD;
 
 import java.time.LocalDateTime;
+import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-        System.out.println("Witamy w CarRental!");
-
         DatabaseApi Api = new DatabaseApi();
         RentalApi rApi = new RentalApi();
 
+        /* SEKCJA TESTOWA
         // Dodawanie pojazdu
         Car car = new Car("Ferrari", 1700, 1200, 2);
         Api.addVehicle(car);
@@ -42,6 +42,53 @@ public class Main {
 
         //rApi.wypozycz(Api.getVehicle(1), client);
 
-        rApi.oddaj(Api.getVehicle(16), Api.getClient(16));
+        rApi.oddaj(Api.getVehicle(19), Api.getClient(19));
+        */
+
+
+        System.out.println("\nWitamy w CarRental!\n");
+        Scanner scanner = new Scanner(System.in);
+        do {
+            System.out.print("Podaj co zrobic:\n" +
+                    "1 - Wyswietlic informacje\n" +
+                    "2 - Wypozyczyc pojazd\n" +
+                    "3 - Zwrocic pojazd\n" +
+                    "Aby wyjsc kliknij wprowadz dowolna inna wartosc. ");
+            int choice1 = scanner.nextInt();
+            switch (choice1) {
+                case 1:
+                    System.out.print("Podaj co wyswietlic (1 - Pojazdy, 2 - klientow, 3 - Wypozyczenia: ");
+                    int choice2 = scanner.nextInt();
+                    switch (choice2) {
+                        case 1:
+                            for (Vehicle v : rApi.getAllVehicles()) {
+                                System.out.println(v);
+                            }
+                            break;
+
+                        case 2:
+                            for (Client c : rApi.getAllClients()) {
+                                System.out.println(c);
+                            }
+                            break;
+
+                        case 3:
+                            for (Rent r : rApi.getAllRents()) {
+                                System.out.println(r);
+                            }
+                            break;
+                    }
+                    break;
+                case 2:
+
+                    break;
+                case 3:
+                    break;
+                default:
+                    break;
+            }
+        } while (true);
+
+
     }
 }
