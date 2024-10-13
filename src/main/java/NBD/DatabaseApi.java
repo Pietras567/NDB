@@ -4,6 +4,8 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
 
+import java.lang.reflect.ParameterizedType;
+
 public class DatabaseApi {
     private final Object lock = new Object();
 
@@ -17,107 +19,37 @@ public class DatabaseApi {
         init();
     }
 
-    public void addVehicle(Vehicle vehicle) {
+    public <T> void addEntity(T entity) {
         EntityManager em = entityManagerFactory.createEntityManager();
         em.getTransaction().begin();
-        em.persist(vehicle);
+        em.persist(entity);
         em.getTransaction().commit();
         em.close();
     }
 
-    public Vehicle getVehicle(long id) {
+    public <T> void deleteEntity(Class<T> entityClass, long id) { // JAKO PARAMETR PODAJEMY np. Vehicle.class
         EntityManager em = entityManagerFactory.createEntityManager();
         em.getTransaction().begin();
-        Vehicle vehicle = em.find(Vehicle.class, id);
-        em.getTransaction().commit();
-        em.close();
-        return vehicle;
-    }
-
-    public void updateVehicle(Vehicle vehicle) {
-        EntityManager em = entityManagerFactory.createEntityManager();
-        em.getTransaction().begin();
-        em.merge(vehicle);
+        T entity = em.find(entityClass, id);
+        em.remove(entity);
         em.getTransaction().commit();
         em.close();
     }
 
-    public void deleteVehicle(int id) {
+    public <T> void updateEntity(T entity) {
         EntityManager em = entityManagerFactory.createEntityManager();
         em.getTransaction().begin();
-        Vehicle vehicle = em.find(Vehicle.class, id);
-        em.remove(vehicle);
+        em.merge(entity);
         em.getTransaction().commit();
         em.close();
     }
 
-    public void addClient(Client client) {
+    public <T> T getEntity(Class<T> entityClass, long id) {
         EntityManager em = entityManagerFactory.createEntityManager();
         em.getTransaction().begin();
-        em.persist(client);
+        T entity = em.find(entityClass, id);
         em.getTransaction().commit();
         em.close();
+        return entity;
     }
-
-    public Client getClient(long id) {
-        EntityManager em = entityManagerFactory.createEntityManager();
-        em.getTransaction().begin();
-        Client client = em.find(Client.class, id);
-        em.getTransaction().commit();
-        em.close();
-        return client;
-    }
-
-    public void updateClient(Client client) {
-        EntityManager em = entityManagerFactory.createEntityManager();
-        em.getTransaction().begin();
-        em.merge(client);
-        em.getTransaction().commit();
-        em.close();
-    }
-
-    public void deleteClient(long id) {
-        EntityManager em = entityManagerFactory.createEntityManager();
-        em.getTransaction().begin();
-        Client client = em.find(Client.class, id);
-        em.remove(client);
-        em.getTransaction().commit();
-        em.close();
-    }
-
-
-    public void addRent(Rent rent) {
-        EntityManager em = entityManagerFactory.createEntityManager();
-        em.getTransaction().begin();
-        em.persist(rent);
-        em.getTransaction().commit();
-        em.close();
-    }
-
-    public Rent getRent(long id) {
-        EntityManager em = entityManagerFactory.createEntityManager();
-        em.getTransaction().begin();
-        Rent rent = em.find(Rent.class, id);
-        em.getTransaction().commit();
-        em.close();
-        return rent;
-    }
-
-    public void updateRent(Rent rent) {
-        EntityManager em = entityManagerFactory.createEntityManager();
-        em.getTransaction().begin();
-        em.merge(rent);
-        em.getTransaction().commit();
-        em.close();
-    }
-
-    public void deleteRent(long id) {
-        EntityManager em = entityManagerFactory.createEntityManager();
-        em.getTransaction().begin();
-        Rent rent = em.find(Rent.class, id);
-        em.remove(rent);
-        em.getTransaction().commit();
-        em.close();
-    }
-
 }
