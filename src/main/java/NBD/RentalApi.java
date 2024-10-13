@@ -35,7 +35,8 @@ public class RentalApi {
                 if(rent.getClient().getId() == client.getId()) {
                     DatabaseApi databaseApi = new DatabaseApi();
                     rent.setEndDate(LocalDateTime.now());
-                    databaseApi.updateRent(rent);
+                    databaseApi.updateEntity(rent);
+//                    databaseApi.updateRent(rent);
                 } else {
                     System.out.println("Pojazd byl wypozyczony przez innego klienta. Nie mozesz go zwrocic.");
                     return false;
@@ -76,9 +77,12 @@ public class RentalApi {
                 System.out.println("jadymy");
                 DatabaseApi Api = new DatabaseApi();
                 Rent rent = new Rent(client.getId(), vehicle.getId(), LocalDateTime.now(), LocalDateTime.now().plusDays(days));
-                rent.setClient(Api.getClient(client.getId()));
-                rent.setVehicle(Api.getVehicle(client.getId()));
-                Api.addRent(rent);
+//                rent.setClient(Api.getClient(client.getId()));
+//                rent.setVehicle(Api.getVehicle(client.getId()));
+                rent.setClient(Api.getEntity(Client.class, client.getId()));
+                rent.setVehicle(Api.getEntity(Vehicle.class, vehicle.getId()));
+                Api.addEntity(rent);
+//                Api.addRent(rent);
             } else {
                 return false;
             }
@@ -89,25 +93,32 @@ public class RentalApi {
         return true;
     }
 
-    public List<Vehicle> getAllVehicles() {
+    public <T> List<T> getAllEntities(Class<T> entityClass) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
-        String jpql = "SELECT r FROM Vehicle r";
-        TypedQuery<Vehicle> query = entityManager.createQuery(jpql, Vehicle.class);
+        String jpql = "SELECT r FROM %s r".formatted(entityClass.getSimpleName());
+        TypedQuery<T> query = entityManager.createQuery(jpql, entityClass);
         return query.getResultList();
     }
 
-    public List<Rent> getAllRents() {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
-        String jpql = "SELECT r FROM Rent r";
-        TypedQuery<Rent> query = entityManager.createQuery(jpql, Rent.class);
-        return query.getResultList();
-    }
-
-
-    public List<Client> getAllClients() {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
-        String jpql = "SELECT r FROM Client r";
-        TypedQuery<Client> query = entityManager.createQuery(jpql, Client.class);
-        return query.getResultList();
-    }
+//    public List<Vehicle> getAllVehicles() {
+//        EntityManager entityManager = entityManagerFactory.createEntityManager();
+//        String jpql = "SELECT r FROM Vehicle r";
+//        TypedQuery<Vehicle> query = entityManager.createQuery(jpql, Vehicle.class);
+//        return query.getResultList();
+//    }
+//
+//    public List<Rent> getAllRents() {
+//        EntityManager entityManager = entityManagerFactory.createEntityManager();
+//        String jpql = "SELECT r FROM Rent r";
+//        TypedQuery<Rent> query = entityManager.createQuery(jpql, Rent.class);
+//        return query.getResultList();
+//    }
+//
+//
+//    public List<Client> getAllClients() {
+//        EntityManager entityManager = entityManagerFactory.createEntityManager();
+//        String jpql = "SELECT r FROM Client r";
+//        TypedQuery<Client> query = entityManager.createQuery(jpql, Client.class);
+//        return query.getResultList();
+//    }
 }

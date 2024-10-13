@@ -4,8 +4,6 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
 
-import java.lang.reflect.ParameterizedType;
-
 public class DatabaseApi {
     private final Object lock = new Object();
 

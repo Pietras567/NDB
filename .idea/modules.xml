@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/IdeaProjects.NDB.NBD.main.iml" filepath="$PROJECT_DIR$/.idea/modules/IdeaProjects.NDB.NBD.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/NBD.main.iml" filepath="$PROJECT_DIR$/.idea/modules/NBD.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/NBD.test.iml" filepath="$PROJECT_DIR$/.idea/modules/NBD.test.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/NDB.NBD.main.iml" filepath="$PROJECT_DIR$/.idea/modules/NDB.NBD.main.iml" />
     </modules>
   </component>
