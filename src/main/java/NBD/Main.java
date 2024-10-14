@@ -7,9 +7,7 @@ public class Main {
     public static void main(String[] args) {
         DatabaseApi Api = new DatabaseApi();
         RentalApi rApi = new RentalApi();
-        Client client = Api.getEntity(Client.class, 1);
-        client.setAge(55);
-        Api.updateEntity(client);
+
 
         /* SEKCJA TESTOWA
         // Dodawanie pojazdu
