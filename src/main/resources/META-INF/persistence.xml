@@ -35,7 +35,7 @@
             <property name="hibernate.hikari.dataSource.url" value="jdbc:postgresql://localhost:5432/nbddb"/>
             <property name="hibernate.hikari.dataSource.user" value="nbd"/>
             <property name="hibernate.hikari.dataSource.password" value="nbdpassword"/>
-            <property name="hibernate.hikari.maximumPoolSize" value="20"/>
+            <property name="hibernate.hikari.maximumPoolSize" value="5"/>
         </properties>
     </persistence-unit>
 </persistence>

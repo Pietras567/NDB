@@ -63,4 +63,14 @@ public abstract class Vehicle {
     public void setRents(List<Rent> rents) {
         this.rents = rents;
     }
+
+    @Override
+    public String toString() {
+        return "Vehicle{" +
+                "id=" + Id +
+                ", name='" + Name + '\'' +
+                ", weight=" + Weight +
+                ", Power=" + Power +
+                '}';
+    }
 }

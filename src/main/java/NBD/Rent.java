@@ -34,6 +34,17 @@ public class Rent {
 
     }
 
+    @Override
+    public String toString() {
+        return "Rent{" +
+                "id=" + id +
+                ", client_id=" + client_id +
+                ", vehicle_id=" + vehicle_id +
+                ", startDate=" + startDate +
+                ", endDate=" + endDate +
+                '}';
+    }
+
     public long getId() {
         return id;
     }
