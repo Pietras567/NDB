@@ -24,7 +24,8 @@ public class DatabaseApiTest {
         assertEquals(car.getName(), car2.getName());
         car.setName("name_changed");
         api.updateEntity(car);
-        assertEquals(car.getName(), "name_changed");
+
+        assertEquals(api.getEntity(Vehicle.class, car.getId()).getName(), "name_changed");
     }
 
     @Test

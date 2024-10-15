@@ -9,6 +9,14 @@ public class Main {
     public static void main(String[] args) {
         DatabaseApi databaseApi = new DatabaseApi();
         RentalApi rentalApi = new RentalApi();
+//        Vehicle car1 = new Car("yaris", 1500, 261, 5);
+//        Vehicle car2 = new Car("126p", 700, 30, 5);
+//        Vehicle car3 = new Car("poldon", 1200, 161, 5);
+//
+//        databaseApi.addEntity(car1);
+//        databaseApi.addEntity(car2);
+//        databaseApi.addEntity(car3);
+
 
         System.out.println("\nWitamy w CarRental!\n");
         Scanner scanner = new Scanner(System.in);
@@ -17,7 +25,8 @@ public class Main {
                     "1 - Wyswietlic informacje\n" +
                     "2 - Wypozyczyc pojazd\n" +
                     "3 - Zwrocic pojazd\n" +
-                    "Aby wyjsc kliknij wprowadz dowolna inna wartosc.\n ");
+                    "4 - Zarejestruj sie\n" +
+                    "Aby wyjsc wprowadz dowolna inna wartosc.\n ");
             int choice1 = scanner.nextInt();
             switch (choice1) {
                 case 1:
@@ -56,13 +65,24 @@ public class Main {
                     rentalApi.wypozycz(vehicle, client, days);
                     break;
                 case 3:
-
+                    System.out.println("Podaj id pojazdu do zwrotu : \n");
+                    int returnedVehicleId = scanner.nextInt();
+                    System.out.println("Podaj id swojego profilu : \n");
+                    int returningClientId = scanner.nextInt();
+                    Vehicle returnedVehicle = databaseApi.getEntity(Vehicle.class, returnedVehicleId);
+                    Client returningClient = databaseApi.getEntity(Client.class, returningClientId);
+                    rentalApi.oddaj(returnedVehicle, returningClient);
+                    break;
+                case 4:
+                    System.out.println("Podaj swoje imie : \n");
+                    String clientName = scanner.next();
+                    System.out.println("Podaj swoj wiek : \n");
+                    int age = scanner.nextInt();
+                    databaseApi.addEntity(new Client(clientName, age));
                     break;
                 default:
                     exit(0);
             }
         } while (true);
-
-
     }
 }

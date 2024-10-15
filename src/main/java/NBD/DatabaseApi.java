@@ -27,6 +27,8 @@ public class DatabaseApi {
         } catch (Exception e) {
             e.printStackTrace();
             em.getTransaction().rollback();
+        } finally {
+            em.close();
         }
     }
 
@@ -41,6 +43,8 @@ public class DatabaseApi {
         } catch (Exception e) {
             e.printStackTrace();
             em.getTransaction().rollback();
+        } finally {
+            em.close();
         }
     }
 
@@ -54,6 +58,8 @@ public class DatabaseApi {
         } catch (Exception e) {
             e.printStackTrace();
             em.getTransaction().rollback();
+        } finally {
+            em.close();
         }
     }
 
@@ -68,6 +74,8 @@ public class DatabaseApi {
         } catch (Exception e) {
             e.printStackTrace();
             em.getTransaction().rollback();
+        } finally {
+            em.close();
         }
         return entity;
     }

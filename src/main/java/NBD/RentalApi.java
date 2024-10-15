@@ -77,14 +77,9 @@ public class RentalApi {
                 System.out.println("jadymy");
                 DatabaseApi Api = new DatabaseApi();
                 Rent rent = new Rent(client.getId(), vehicle.getId(), LocalDateTime.now(), LocalDateTime.now().plusDays(days));
-//                rent.setClient(Api.getClient(client.getId()));
-//                rent.setVehicle(Api.getVehicle(client.getId()));
-//                rent.setClient(Api.getEntity(Client.class, client.getId()));
-//                rent.setVehicle(Api.getEntity(Vehicle.class, vehicle.getId()));
                 rent.setClient(client);
                 rent.setVehicle(vehicle);
                 Api.addEntity(rent);
-//                Api.addRent(rent);
             } else {
                 return false;
             }
