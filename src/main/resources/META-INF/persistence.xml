@@ -11,7 +11,7 @@
         <class>NBD.Rent</class>
         <class>NBD.Client</class>
         <properties>
-
+            <property name="hibernate.connection.isolation" value="8"/>
             <property name="jakarta.persistence.jdbc.url"
                       value="jdbc:postgresql://localhost:5432/nbddb"/>
 
