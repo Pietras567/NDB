@@ -22,17 +22,17 @@ import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 
 
 public class DatabaseApi implements CRUDManager {
-    private final static ClusterSettings clusterSettings = ClusterSettings.builder()
-            .hosts(Collections.singletonList(new ServerAddress("localhost", 27017)))  // Adres MongoDB
-            .requiredReplicaSetName("rs0")
-            .build();
-    private final static ConnectionString connectionString = new ConnectionString("mongodb://nbd:nbdpassword@localhost:27017/admin?authSource=admin");
-    //private final static MongoCredential credential = MongoCredential.createCredential("nbd", "admin", "nbdpassword".toCharArray());
+    //private final static ClusterSettings clusterSettings = ClusterSettings.builder()
+    //        .hosts(Collections.singletonList(new ServerAddress("mongo_primary", 27017)))  // Adres MongoDB
+    //        .requiredReplicaSetName("rs0")
+    //        .build();
+    private final static ConnectionString connectionString = new ConnectionString("mongodb://mongo_primary:27017,mongo_secondary1:27018,mongo_secondary2:27019/replicaSet=rs0");
+    private final static MongoCredential credential = MongoCredential.createCredential("nbdAdmin", "admin", "nbdpassword".toCharArray());
     private final static CodecRegistry pojoCodecRegistry = fromProviders(PojoCodecProvider.builder().automatic(true).build());
     private final static CodecRegistry codecRegistry = fromRegistries(MongoClientSettings.getDefaultCodecRegistry(), pojoCodecRegistry);
     private final static MongoClientSettings clientSettings = MongoClientSettings.builder()
-            //.credential(credential)
-            .applyToClusterSettings(builder -> builder.applySettings(clusterSettings))
+            .credential(credential)
+            //.applyToClusterSettings(builder -> builder.applySettings(clusterSettings))
             .applyConnectionString(connectionString)
             .codecRegistry(codecRegistry)
             .build();
@@ -55,7 +55,6 @@ public class DatabaseApi implements CRUDManager {
         //getDatabase().createCollection("vehicles");
         //getDatabase().createCollection("rents");
         //getDatabase().createCollection("clients");
-        //mongoDatabase.runCommand(new Document("replSetAdd", "localhost:27017"));
     }
 
     @Override
