@@ -1,24 +1,25 @@
 package NBD;
 
-import jakarta.persistence.*;
+import com.mongodb.client.MongoDatabase;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import com.mongodb.client.MongoCollection;
+import org.bson.types.ObjectId;
+import static com.mongodb.client.model.Filters.eq;
 
 
 public class RentalApi {
-    private EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("default");
+    private DatabaseApi databaseApi = new DatabaseApi();
+    private MongoDatabase database = databaseApi.getDatabase();
 
     public boolean oddaj(Vehicle vehicle, Client client) {
         try {
-            long vehicleId = vehicle.getId();
+            ObjectId vehicleId = vehicle.getId();
             System.out.println(vehicleId);
-            EntityManager entityManager = entityManagerFactory.createEntityManager();
-            String jpql = "SELECT r FROM Rent r WHERE r.vehicle_id = :vehicleId";
-            TypedQuery<Rent> query = entityManager.createQuery(jpql, Rent.class);
-            query.setParameter("vehicleId", vehicleId);
+            MongoCollection<Rent> rentCollection = database.getCollection("rents", Rent.class);
 
-            List<Rent> list = query.getResultList();
+            List<Rent> list = rentCollection.find(eq("vehicle_id", vehicleId)).into(new ArrayList<>());
             boolean wypozyczony = false;
             Rent rent = null;
             if(!list.isEmpty()) {
@@ -33,10 +34,8 @@ public class RentalApi {
 
             if(wypozyczony) {
                 if(rent.getClient().getId() == client.getId()) {
-                    DatabaseApi databaseApi = new DatabaseApi();
                     rent.setEndDate(LocalDateTime.now());
-                    databaseApi.updateEntity(rent);
-//                    databaseApi.updateRent(rent);
+                    databaseApi.updateEntity(rent, "rents", rent.getId());
                 } else {
                     System.out.println("Pojazd byl wypozyczony przez innego klienta. Nie mozesz go zwrocic.");
                     return false;
@@ -55,14 +54,10 @@ public class RentalApi {
 
     public boolean wypozycz(Vehicle vehicle, Client client, int days) {
         try {
-            long vehicleId = vehicle.getId();
+            ObjectId vehicleId = vehicle.getId();
             System.out.println(vehicleId);
-            EntityManager entityManager = entityManagerFactory.createEntityManager();
-            String jpql = "SELECT r FROM Rent r WHERE r.vehicle_id = :vehicleId";
-            TypedQuery<Rent> query = entityManager.createQuery(jpql, Rent.class);
-            query.setParameter("vehicleId", vehicleId);
-
-            List<Rent> list = query.getResultList();
+            MongoCollection<Rent> rentCollection = database.getCollection("rents", Rent.class);
+            List<Rent> list = rentCollection.find(eq("vehicle_id", vehicleId)).into(new ArrayList<>());
             boolean wypozyczony = false;
             if(!list.isEmpty()) {
                 for (Rent r : list) {
@@ -75,11 +70,10 @@ public class RentalApi {
 
             if(!wypozyczony) {
                 System.out.println("jadymy");
-                DatabaseApi Api = new DatabaseApi();
                 Rent rent = new Rent(client.getId(), vehicle.getId(), LocalDateTime.now(), LocalDateTime.now().plusDays(days));
-                rent.setClient(client);
-                rent.setVehicle(vehicle);
-                Api.addEntity(rent);
+                //rent.setClient(client);
+                //rent.setVehicle(vehicle);
+                databaseApi.addEntity(rent, "rents");
             } else {
                 return false;
             }
@@ -91,9 +85,7 @@ public class RentalApi {
     }
 
     public <T> List<T> getAllEntities(Class<T> entityClass) {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
-        String jpql = "SELECT r FROM %s r".formatted(entityClass.getSimpleName());
-        TypedQuery<T> query = entityManager.createQuery(jpql, entityClass);
-        return query.getResultList();
+        MongoCollection<T> collection = database.getCollection(entityClass.getSimpleName().toLowerCase() + "s", entityClass);
+        return collection.find().into(new ArrayList<>());
     }
 }

@@ -1,20 +1,24 @@
 package NBD;
 
-import jakarta.persistence.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity
-public class Client {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
-    private String name;
-    private int age;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import org.bson.codecs.pojo.annotations.BsonProperty;
+import org.bson.types.ObjectId;
+import org.bson.codecs.pojo.annotations.BsonId;
 
-    @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Rent> rents = new ArrayList<>();
+import static com.mongodb.client.model.Filters.eq;
+
+public class Client {
+    @BsonId
+    private ObjectId Id;
+    @BsonProperty("name")
+    private String name;
+    @BsonProperty("age")
+    private int age;
 
     public Client(String name, int age) {
         this.name = name;
@@ -24,8 +28,8 @@ public class Client {
     public Client() {}
 
 
-    public long getId() {
-        return id;
+    public ObjectId getId() {
+        return Id;
     }
 
     public String getName() {
@@ -45,20 +49,24 @@ public class Client {
     }
 
     public List<Rent> getRents() {
-        return rents;
+        DatabaseApi api = new DatabaseApi();
+        MongoDatabase database = api.getDatabase();
+        MongoCollection<Rent> collection = database.getCollection("rents", Rent.class);
+        return collection.find(eq("client_id", Id)).into(new ArrayList<>());
     }
 
-    public void setRents(List<Rent> rents) {
-        this.rents = rents;
-    }
 
     @Override
     public String toString() {
         return "Client{" +
-                "id=" + id +
+                "id=" + Id +
                 ", name='" + name + '\'' +
                 ", age=" + age +
-                ", rents=" + rents +
+                ", rents=" + this.getRents() +
                 '}';
+    }
+
+    public void setId(ObjectId id) {
+        this.Id = id;
     }
 }

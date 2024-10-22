@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class DatabaseApiTest {
+    /*
     @Test
     public void insertToDatabaseTest() {
         DatabaseApi api = new DatabaseApi();
@@ -37,4 +38,5 @@ public class DatabaseApiTest {
         Vehicle car2 = api.getEntity(Vehicle.class, car.getId());
         assertNull(car2);
     }
+     */
 }

@@ -1,16 +1,133 @@
 version: '3.8'
 
 services:
-  db:
-    image: postgres
-    restart: always
-    environment:
-      POSTGRES_DB: nbddb
-      POSTGRES_USER: nbd
-      POSTGRES_PASSWORD: nbdpassword
+  # Etap 1: Uruchom MongoDB bez repliki i autoryzacji
+  mongodb_setup:
+    image: mongo:8.0.1
+    container_name: mongo_setup
+    hostname: localhost
+
     ports:
-      - 5432:5432
+      - "27018:27017"
+
     volumes:
-      - pg:/var/lib/postgresql/data
+      - mongodb_data:/data/db
+      - ./keyfile:/etc/mongo/keyfile
+
+    command: >
+      sh -c "
+      chmod 400 /etc/mongo/keyfile &&
+      mongod --bind_ip_all --port 27017 --fork --logpath /var/log/mongodb.log &&
+
+      echo 'Waiting for MongoDB to start...' &&
+      until mongosh --host localhost:27017 --eval 'print(\"MongoDB started\")'; do sleep 5; done &&
+
+      echo 'Creating admin user...' &&
+      mongosh --host localhost:27017 --eval '
+        db = db.getSiblingDB(\"admin\");
+        db.createUser({
+          user: \"nbd\",
+          pwd: \"nbdpassword\",
+          roles: [{ role: \"root\", db: \"admin\" }, 
+                  { role: \"clusterAdmin\", db: \"admin\" },
+                  { role: \"readWrite\", db: \"admin\" },
+                  { role: \"dbOwner\", db: \"admin\" },
+                  { role: \"dbAdmin\", db: \"admin\" },
+                  { role: \"dbAdminAnyDatabase\", db: \"admin\" }]
+        });
+        print(\"Admin user created\");
+      ' &&
+      
+      echo 'Creating Normal user...' &&
+        mongosh --host localhost:27017 --eval '
+          db = db.getSiblingDB(\"admin\");
+          db.createUser({
+            user: \"nbdRW\",
+            pwd: \"nbdpasswordRW\",
+            roles: [{ role: \"readWrite\", db: \"admin\" }]
+          });
+          print(\"Normal user created\");
+        ' &&
+      
+      echo 'Creating root user...' &&
+        mongosh --host localhost:27017 --eval '
+          db = db.getSiblingDB(\"admin\");
+          db.createUser({
+            user: \"rootUser\",
+            pwd: \"rootPassword\",
+            roles: [{ role: \"root\", db: \"admin\" }, { role: \"clusterAdmin\", db: \"admin\" }]
+          });
+          print(\"Root user created\");
+        ';
+      "
+
+    restart: "no"
+
+    healthcheck:
+      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
+      interval: 10s
+      timeout: 2s
+      retries: 5
+
+    networks:
+      - mongonet
+
+  # Etap 2: MongoDB z autoryzacją i repliką
+  mongodb:
+    image: mongo:8.0.1
+    container_name: mongo_carrental
+    hostname: localhost
+
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - ./keyfile:/etc/mongo/keyfile
+    command: >
+      sh -c "
+      chmod 400 /etc/mongo/keyfile &&
+      mongod --replSet rs0 --auth --keyFile /etc/mongo/keyfile --bind_ip_all --fork --port 27017 --logpath /var/log/mongodb.log &&
+
+      sleep 5 &&
+      echo 'Waiting for MongoDB with replica set...' &&
+      until mongosh --host localhost:27017 --username nbd --password nbdpassword --authenticationDatabase admin --eval 'print(\"MongoDB started\")'; do sleep 5; done &&
+      
+      echo 'Initiating replica set...' &&
+      mongosh --host localhost:27017 --username nbd --password nbdpassword --authenticationDatabase admin --eval '
+        rs.initiate({
+          _id: \"rs0\",
+          members: [
+            { _id: 0, host: \"localhost:27017\" },
+            { _id: 1, host: \"localhost:27018\" },
+            { _id: 2, host: \"localhost:27019\" }
+          ]
+        });
+      ' &&
+
+      echo 'Adding members to replica set...' &&
+      mongosh --host localhost:27017 --username nbd --password nbdpassword --authenticationDatabase admin --eval '
+        rs.add(\"localhost:27017\");
+        rs.add(\"localhost:27018\");
+        rs.add(\"localhost:27019\");
+        rs.status();
+      ';
+      "    
+
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 2048M
+
+    networks:
+      - mongonet
+
+    depends_on:
+      mongodb_setup:
+        condition: service_completed_successfully
+
 volumes:
-  pg:
+  mongodb_data:
+
+networks:
+  mongonet: {}

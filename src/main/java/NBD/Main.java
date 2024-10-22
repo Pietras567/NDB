@@ -1,5 +1,7 @@
 package NBD;
 
+import org.bson.types.ObjectId;
+
 import java.time.LocalDateTime;
 import java.util.Scanner;
 
@@ -54,23 +56,23 @@ public class Main {
                     break;
                 case 2:
                     System.out.println("Podaj id pojazdu ktory chcesz wypozyczyc : \n");
-                    int vehicleId = scanner.nextInt();
+                    ObjectId vehicleId = new ObjectId(String.valueOf(scanner.nextInt()));
                     System.out.println("Podaj id swojego profilu : \n");
-                    int clientId = scanner.nextInt();
+                    ObjectId clientId = new ObjectId(String.valueOf(scanner.nextInt()));
                     System.out.println("Podaj na jak dlugo wypozyczasz (dni) : \n");
                     int days = scanner.nextInt();
 
-                    Client client = databaseApi.getEntity(Client.class, clientId);
-                    Vehicle vehicle = databaseApi.getEntity(Vehicle.class, vehicleId);
+                    Client client = databaseApi.getEntity(Client.class, "clients", clientId);
+                    Vehicle vehicle = databaseApi.getEntity(Vehicle.class, "vehicles", vehicleId);
                     rentalApi.wypozycz(vehicle, client, days);
                     break;
                 case 3:
                     System.out.println("Podaj id pojazdu do zwrotu : \n");
-                    int returnedVehicleId = scanner.nextInt();
+                    ObjectId returnedVehicleId = new ObjectId(String.valueOf(scanner.nextInt()));
                     System.out.println("Podaj id swojego profilu : \n");
-                    int returningClientId = scanner.nextInt();
-                    Vehicle returnedVehicle = databaseApi.getEntity(Vehicle.class, returnedVehicleId);
-                    Client returningClient = databaseApi.getEntity(Client.class, returningClientId);
+                    ObjectId returningClientId = new ObjectId(String.valueOf(scanner.nextInt()));
+                    Vehicle returnedVehicle = databaseApi.getEntity(Vehicle.class, "vehicles", returnedVehicleId);
+                    Client returningClient = databaseApi.getEntity(Client.class, "clients", returningClientId);
                     rentalApi.oddaj(returnedVehicle, returningClient);
                     break;
                 case 4:
@@ -78,7 +80,7 @@ public class Main {
                     String clientName = scanner.next();
                     System.out.println("Podaj swoj wiek : \n");
                     int age = scanner.nextInt();
-                    databaseApi.addEntity(new Client(clientName, age));
+                    databaseApi.addEntity(new Client(clientName, age), "clients");
                     break;
                 default:
                     exit(0);

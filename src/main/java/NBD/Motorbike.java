@@ -1,9 +1,5 @@
 package NBD;
-import jakarta.persistence.DiscriminatorValue;
-import jakarta.persistence.Entity;
 
-@Entity
-@DiscriminatorValue("Motorbike")
 public class Motorbike extends Vehicle {
     private int engineCapacity;
 

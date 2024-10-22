@@ -1,21 +1,21 @@
 package NBD;
-import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(name = "vehicle_type", discriminatorType = DiscriminatorType.STRING)
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import org.bson.types.ObjectId;
+import org.bson.codecs.pojo.annotations.BsonId;
+
+import static com.mongodb.client.model.Filters.eq;
+
 public abstract class Vehicle {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long Id;
+    @BsonId
+    private ObjectId Id;
     private String Name;
     private int Weight;
     private int Power;
-
-    @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Rent> rents = new ArrayList<>();
+    //private List<Rent> rents = new ArrayList<>();
 
     public Vehicle() {
 
@@ -38,7 +38,7 @@ public abstract class Vehicle {
         Weight = weight;
     }
 
-    public long getId() {
+    public ObjectId getId() {
         return Id;
     }
 
@@ -57,11 +57,10 @@ public abstract class Vehicle {
     }
 
     public List<Rent> getRents() {
-        return rents;
-    }
-
-    public void setRents(List<Rent> rents) {
-        this.rents = rents;
+        DatabaseApi api = new DatabaseApi();
+        MongoDatabase database = api.getDatabase();
+        MongoCollection<Rent> collection = database.getCollection("rents", Rent.class);
+        return collection.find(eq("vehicle_id", this.Id)).into(new ArrayList<>());
     }
 
     @Override
