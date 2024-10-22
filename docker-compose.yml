@@ -15,12 +15,13 @@ services:
     ports:
       - "27017:27017"
     volumes:
-      - mongodb_data:/data/db1
+      - mongodb_data1:/data/db
       - ./keyfile:/etc/mongo/keyfile
+      - ./mongod.conf:/etc/mongod.conf
     command: >
       sh -c "
       chmod 400 /etc/mongo/keyfile &&
-      mongod --auth --keyFile /etc/mongo/keyfile --bind_ip_all --port 27017
+      mongod --auth --keyFile /etc/mongo/keyfile --bind_ip_all --config /etc/mongod.conf --port 27017 --replSet rs0
       "
 
     healthcheck:
@@ -50,12 +51,13 @@ services:
     ports:
       - "27018:27017"
     volumes:
-      - mongodb_data:/data/db2
+      - mongodb_data2:/data/db
       - ./keyfile:/etc/mongo/keyfile
+      - ./mongod.conf:/etc/mongod.conf
     command: >
       sh -c "
       chmod 400 /etc/mongo/keyfile &&
-      mongod --auth --keyFile /etc/mongo/keyfile --bind_ip_all --port 27018
+      mongod --auth --keyFile /etc/mongo/keyfile --bind_ip_all --config /etc/mongod.conf --port 27018 --replSet rs0
       "
 
     healthcheck:
@@ -83,12 +85,13 @@ services:
     ports:
       - "27019:27017"
     volumes:
-      - mongodb_data:/data/db3
+      - mongodb_data3:/data/db
       - ./keyfile:/etc/mongo/keyfile
+      - ./mongod.conf:/etc/mongod.conf
     command: >
       sh -c "
       chmod 400 /etc/mongo/keyfile &&
-      mongod --auth --keyFile /etc/mongo/keyfile --bind_ip_all --port 27019
+      mongod --auth --keyFile /etc/mongo/keyfile --bind_ip_all --config /etc/mongod.conf --port 27019 --replSet rs0
       "
 
     healthcheck:
@@ -124,6 +127,16 @@ services:
       echo 'Creating admin user...' &&
       mongosh --host mongo_primary:27017 --username nbd --password nbdpassword --authenticationDatabase admin --eval '
         db = db.getSiblingDB(\"admin\");
+      
+        db.createRole({
+          role: 'versionFind',
+          privileges: [
+            { resource: { db: 'admin', collection: 'system.version' }, actions: ['find'] },
+            { resource: { db: "admin", collection: "" }, actions: [ "listCollections" ] }
+          ],
+          roles: [],
+        });
+      
         db.createUser({
           user: \"nbdAdmin\",
           pwd: \"nbdpassword\",
@@ -132,17 +145,30 @@ services:
                   { role: \"readWrite\", db: \"admin\" },
                   { role: \"dbOwner\", db: \"admin\" },
                   { role: \"dbAdmin\", db: \"admin\" },
-                  { role: \"dbAdminAnyDatabase\", db: \"admin\" }]
+                  { role: \"dbAdminAnyDatabase\", db: \"admin\" },
+                  { role: \"read\", db: \"admin\" },
+                  { role: \"versionFind\", db: \"admin\" },
+                  { role: "userAdminAnyDatabase", db: "admin" }
+          ]
         });
         print(\"Admin user created\");
+      
+      
+        db.adminCommand(
+           {
+              setFeatureCompatibilityVersion: "7.0",
+              confirm: true
+           }
+        )
       ' &&
       
-        until mongosh --host mongo_primary:27017 --username nbd --password nbdpassword --authenticationDatabase admin --eval 'print(\"MongoDB started\")'; do sleep 5; done &&
+        until mongosh --host mongo_primary:27017 --username nbdAdmin --password nbdpassword --authenticationDatabase admin --eval 'print(\"MongoDB started\")'; do sleep 5; done &&
 
         echo 'Initiating replica set...' &&
-        mongosh --host mongo_primary:27017 --username nbd --password nbdpassword --authenticationDatabase admin --eval '
+        mongosh --host mongo_primary:27017 --username nbdAdmin --password nbdpassword --authenticationDatabase admin --eval '
           rs.initiate({
             _id: \"rs0\",
+            version: 1,
             members: [
               { _id: 0, host: \"mongo_primary:27017\" },
               { _id: 1, host: \"mongo_secondary1:27018\" },
@@ -152,7 +178,7 @@ services:
         ' &&
 
         echo 'Adding members to replica set...' &&
-        mongosh --host mongo_primary:27017 --username nbd --password nbdpassword --authenticationDatabase admin --eval '
+        mongosh --host mongo_primary:27017 --username nbdAdmin --password nbdpassword --authenticationDatabase admin --eval '
           rs.add(\"mongo_primary:27017\");
           rs.add(\"mongo_secondary1:27018\");
           rs.add(\"mongo_secondary2:27019\");
@@ -174,7 +200,9 @@ services:
         condition: service_started
 
 volumes:
-  mongodb_data:
+  mongodb_data1:
+  mongodb_data2:
+  mongodb_data3:
 
 networks:
   mongonet: {}
