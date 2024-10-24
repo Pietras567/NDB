@@ -8,8 +8,8 @@ services:
     hostname: mongo_primary
 
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=nbd
-      - MONGO_INITDB_ROOT_PASSWORD=nbdpassword
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=admin
       - MONGO_INITDB_DATABASE=admin
 
     ports:
@@ -19,18 +19,38 @@ services:
 
     volumes:
       - mongodb_data1:/data/db
-      - keyfile:/etc/mongo/keyfile
-      - ./mongod_prim.conf:/etc/mongod.conf
+      - ./mongod.conf:/etc/mongod.conf
+      - ./keyfile:/etc/mongo/keyfile
     command: >
-      sh -c "
-      [ ! -f /etc/mongo/keyfile/key ] && 
-      (openssl rand -base64 756 > /etc/mongo/keyfile/key && chmod 400 /etc/mongo/keyfile/key); 
-      mongod --auth --keyFile /etc/mongo/keyfile/key --bind_ip_all --config /etc/mongod.conf --replSet rs0
+      bash -c "
+        mongod --config /etc/mongod.conf --bind_ip_all
+        sleep 15;
+        mongosh -u admin -p admin --eval '
+          db = db.getSiblingDB(\"admin\");
+          db.createUser({
+            user: \"nbd\",
+            pwd: \"nbdpassword\",
+            roles: [
+              { role: \"root\", db: \"admin\" }, 
+              { role: \"clusterAdmin\", db: \"admin\" },
+              { role: \"readWrite\", db: \"admin\" },
+              { role: \"dbOwner\", db: \"admin\" },
+              { role: \"dbAdmin\", db: \"admin\" },
+              { role: \"dbAdminAnyDatabase\", db: \"admin\" },
+              { role: \"read\", db: \"admin\" },
+              { role: \"userAdminAnyDatabase\", db: \"admin\" }
+            ],
+            mechanisms : [
+              \"SCRAM-SHA-1\",
+              \"SCRAM-SHA-256\"
+            ]
+          });
+          print(\"Admin user created\");
+        ';
       "
 
     healthcheck:
       test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
-      #test: [ "CMD", "mongosh", "--eval", "--username", "nbd", "--password", "nbdpassword", "db.adminCommand('ping')" ]
       interval: 10s
       timeout: 2s
       retries: 5
@@ -54,13 +74,13 @@ services:
     hostname: mongo_secondary1
 
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=nbd
-      - MONGO_INITDB_ROOT_PASSWORD=nbdpassword
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=admin
       - MONGO_INITDB_DATABASE=admin
 
-    depends_on:
-      mongo_primary:
-          condition: service_healthy
+    #depends_on:
+    #  mongo_primary:
+    #      condition: service_healthy
 
     ports:
       - "27018:27017"
@@ -69,18 +89,15 @@ services:
 
     volumes:
       - mongodb_data2:/data/db
-      - keyfile:/etc/mongo/keyfile
       - ./mongod.conf:/etc/mongod.conf
+      - ./keyfile:/etc/mongo/keyfile
     command: >
-      sh -c "
-      [ ! -f /etc/mongo/keyfile/key ] && 
-      (openssl rand -base64 756 > /etc/mongo/keyfile/key && chmod 400 /etc/mongo/keyfile/key); 
-      mongod --auth --keyFile /etc/mongo/keyfile/key --bind_ip_all --config /etc/mongod.conf --replSet rs0
+      bash -c "
+        mongod --config /etc/mongod.conf --bind_ip_all
       "
 
     healthcheck:
       test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
-      #test: [ "CMD", "mongosh", "--eval", "--username", "nbd", "--password", "nbdpassword", "db.adminCommand('ping')" ]
       interval: 10s
       timeout: 2s
       retries: 5
@@ -102,8 +119,8 @@ services:
     hostname: mongo_secondary2
 
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=nbd
-      - MONGO_INITDB_ROOT_PASSWORD=nbdpassword
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=admin
       - MONGO_INITDB_DATABASE=admin
 
     ports:
@@ -113,24 +130,21 @@ services:
     
     volumes:
       - mongodb_data3:/data/db
-      - keyfile:/etc/mongo/keyfile
       - ./mongod.conf:/etc/mongod.conf
+      - ./keyfile:/etc/mongo/keyfile
     command: >
-      sh -c "
-      [ ! -f /etc/mongo/keyfile/key ] && 
-      (openssl rand -base64 756 > /etc/mongo/keyfile/key && chmod 400 /etc/mongo/keyfile/key); 
-      mongod --auth --keyFile /etc/mongo/keyfile/key --bind_ip_all --config /etc/mongod.conf --replSet rs0
+      bash -c "
+        mongod --config /etc/mongod.conf --bind_ip_all
       "
 
-    depends_on:
-      mongo_primary:
-        condition: service_healthy
-      mongo_secondary1:
-        condition: service_healthy
+    #depends_on:
+      #mongo_primary:
+      #  condition: service_healthy
+      #mongo_secondary1:
+      #  condition: service_healthy
 
     healthcheck:
       test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
-      #test: [ "CMD", "mongosh", "--eval", "--username", "nbd", "--password", "nbdpassword", "db.adminCommand('ping')" ]
       interval: 10s
       timeout: 2s
       retries: 5
@@ -151,57 +165,12 @@ services:
     container_name: mongo_setup
     hostname: mongodb_setup
 
-    volumes:
-      - keyfile:/etc/mongo/keyfile
-
     command: >
-      sh -c "
-      [ ! -f /etc/mongo/keyfile/key ] && 
-      (openssl rand -base64 756 > /etc/mongo/keyfile/key && chmod 400 /etc/mongo/keyfile/key); 
-      mongod --bind_ip_all &&
-
-      echo 'Creating admin user...' &&
-      mongosh --host mongo_primary:27017 --username nbd --password nbdpassword --authenticationDatabase admin --eval '
-        db = db.getSiblingDB(\"admin\");
-      
-        db.createRole({
-          role: 'versionFind',
-          privileges: [
-            { resource: { db: 'admin', collection: 'system.version' }, actions: ['find'] },
-            { resource: { db: "admin", collection: "" }, actions: [ "listCollections" ] }
-          ],
-          roles: [],
-        });
-      
-        db.createUser({
-          user: \"nbdAdmin\",
-          pwd: \"nbdpassword\",
-          roles: [{ role: \"root\", db: \"admin\" }, 
-                  { role: \"clusterAdmin\", db: \"admin\" },
-                  { role: \"readWrite\", db: \"admin\" },
-                  { role: \"dbOwner\", db: \"admin\" },
-                  { role: \"dbAdmin\", db: \"admin\" },
-                  { role: \"dbAdminAnyDatabase\", db: \"admin\" },
-                  { role: \"read\", db: \"admin\" },
-                  { role: \"versionFind\", db: \"admin\" },
-                  { role: "userAdminAnyDatabase", db: "admin" }
-          ]
-        });
-        print(\"Admin user created\");
-      
-      
-        db.adminCommand(
-           {
-              setFeatureCompatibilityVersion: "7.0",
-              confirm: true
-           }
-        )
-      ' &&
-      
-        until mongosh --host mongo_primary:27017 --username nbd --password nbdpassword --authenticationDatabase admin --eval 'print(\"MongoDB started\")'; do sleep 5; done &&
-
-        echo 'Initiating replica set...' &&
+      bash -c "
+        sleep 30;
+        echo 'Initiating...' &&
         mongosh --host mongo_primary:27017 --username nbd --password nbdpassword --authenticationDatabase admin --eval '
+          db = db.getSiblingDB(\"admin\");
           rs.initiate({
             _id: \"rs0\",
             version: 1,
@@ -211,15 +180,12 @@ services:
               { _id: 2, host: \"mongo_secondary2:27019\" }
             ]
           });
-        ' &&
-
-        echo 'Adding members to replica set...' &&
-        mongosh --host mongo_primary:27017 --username nbd --password nbdpassword --authenticationDatabase admin --eval '
+  
           rs.add(\"mongo_primary:27017\");
           rs.add(\"mongo_secondary1:27018\");
           rs.add(\"mongo_secondary2:27019\");
           rs.status();
-        ';
+          ';
       "
 
     restart: "no"
@@ -239,7 +205,6 @@ volumes:
   mongodb_data1:
   mongodb_data2:
   mongodb_data3:
-  keyfile:
 
 networks:
   mongonet: {
