@@ -10,22 +10,27 @@ services:
     environment:
       - MONGO_INITDB_ROOT_USERNAME=nbd
       - MONGO_INITDB_ROOT_PASSWORD=nbdpassword
-      - MONGO_INITDB_ROOT_DATABASE=admin
+      - MONGO_INITDB_DATABASE=admin
 
     ports:
       - "27017:27017"
+
+    restart: unless-stopped
+
     volumes:
       - mongodb_data1:/data/db
-      - ./keyfile:/etc/mongo/keyfile
-      - ./mongod.conf:/etc/mongod.conf
+      - keyfile:/etc/mongo/keyfile
+      - ./mongod_prim.conf:/etc/mongod.conf
     command: >
       sh -c "
-      chmod 400 /etc/mongo/keyfile &&
-      mongod --auth --keyFile /etc/mongo/keyfile --bind_ip_all --config /etc/mongod.conf --port 27017 --replSet rs0
+      [ ! -f /etc/mongo/keyfile/key ] && 
+      (openssl rand -base64 756 > /etc/mongo/keyfile/key && chmod 400 /etc/mongo/keyfile/key); 
+      mongod --auth --keyFile /etc/mongo/keyfile/key --bind_ip_all --config /etc/mongod.conf --replSet rs0
       "
 
     healthcheck:
       test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
+      #test: [ "CMD", "mongosh", "--eval", "--username", "nbd", "--password", "nbdpassword", "db.adminCommand('ping')" ]
       interval: 10s
       timeout: 2s
       retries: 5
@@ -48,20 +53,34 @@ services:
     container_name: mongo_secondary1
     hostname: mongo_secondary1
 
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=nbd
+      - MONGO_INITDB_ROOT_PASSWORD=nbdpassword
+      - MONGO_INITDB_DATABASE=admin
+
+    depends_on:
+      mongo_primary:
+          condition: service_healthy
+
     ports:
       - "27018:27017"
+
+    restart: unless-stopped
+
     volumes:
       - mongodb_data2:/data/db
-      - ./keyfile:/etc/mongo/keyfile
+      - keyfile:/etc/mongo/keyfile
       - ./mongod.conf:/etc/mongod.conf
     command: >
       sh -c "
-      chmod 400 /etc/mongo/keyfile &&
-      mongod --auth --keyFile /etc/mongo/keyfile --bind_ip_all --config /etc/mongod.conf --port 27018 --replSet rs0
+      [ ! -f /etc/mongo/keyfile/key ] && 
+      (openssl rand -base64 756 > /etc/mongo/keyfile/key && chmod 400 /etc/mongo/keyfile/key); 
+      mongod --auth --keyFile /etc/mongo/keyfile/key --bind_ip_all --config /etc/mongod.conf --replSet rs0
       "
 
     healthcheck:
       test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
+      #test: [ "CMD", "mongosh", "--eval", "--username", "nbd", "--password", "nbdpassword", "db.adminCommand('ping')" ]
       interval: 10s
       timeout: 2s
       retries: 5
@@ -82,20 +101,36 @@ services:
     container_name: mongo_secondary2
     hostname: mongo_secondary2
 
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=nbd
+      - MONGO_INITDB_ROOT_PASSWORD=nbdpassword
+      - MONGO_INITDB_DATABASE=admin
+
     ports:
       - "27019:27017"
+
+    restart: unless-stopped
+    
     volumes:
       - mongodb_data3:/data/db
-      - ./keyfile:/etc/mongo/keyfile
+      - keyfile:/etc/mongo/keyfile
       - ./mongod.conf:/etc/mongod.conf
     command: >
       sh -c "
-      chmod 400 /etc/mongo/keyfile &&
-      mongod --auth --keyFile /etc/mongo/keyfile --bind_ip_all --config /etc/mongod.conf --port 27019 --replSet rs0
+      [ ! -f /etc/mongo/keyfile/key ] && 
+      (openssl rand -base64 756 > /etc/mongo/keyfile/key && chmod 400 /etc/mongo/keyfile/key); 
+      mongod --auth --keyFile /etc/mongo/keyfile/key --bind_ip_all --config /etc/mongod.conf --replSet rs0
       "
+
+    depends_on:
+      mongo_primary:
+        condition: service_healthy
+      mongo_secondary1:
+        condition: service_healthy
 
     healthcheck:
       test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
+      #test: [ "CMD", "mongosh", "--eval", "--username", "nbd", "--password", "nbdpassword", "db.adminCommand('ping')" ]
       interval: 10s
       timeout: 2s
       retries: 5
@@ -117,11 +152,12 @@ services:
     hostname: mongodb_setup
 
     volumes:
-      - ./keyfile:/etc/mongo/keyfile
+      - keyfile:/etc/mongo/keyfile
 
     command: >
       sh -c "
-      chmod 400 /etc/mongo/keyfile &&
+      [ ! -f /etc/mongo/keyfile/key ] && 
+      (openssl rand -base64 756 > /etc/mongo/keyfile/key && chmod 400 /etc/mongo/keyfile/key); 
       mongod --bind_ip_all &&
 
       echo 'Creating admin user...' &&
@@ -162,10 +198,10 @@ services:
         )
       ' &&
       
-        until mongosh --host mongo_primary:27017 --username nbdAdmin --password nbdpassword --authenticationDatabase admin --eval 'print(\"MongoDB started\")'; do sleep 5; done &&
+        until mongosh --host mongo_primary:27017 --username nbd --password nbdpassword --authenticationDatabase admin --eval 'print(\"MongoDB started\")'; do sleep 5; done &&
 
         echo 'Initiating replica set...' &&
-        mongosh --host mongo_primary:27017 --username nbdAdmin --password nbdpassword --authenticationDatabase admin --eval '
+        mongosh --host mongo_primary:27017 --username nbd --password nbdpassword --authenticationDatabase admin --eval '
           rs.initiate({
             _id: \"rs0\",
             version: 1,
@@ -178,7 +214,7 @@ services:
         ' &&
 
         echo 'Adding members to replica set...' &&
-        mongosh --host mongo_primary:27017 --username nbdAdmin --password nbdpassword --authenticationDatabase admin --eval '
+        mongosh --host mongo_primary:27017 --username nbd --password nbdpassword --authenticationDatabase admin --eval '
           rs.add(\"mongo_primary:27017\");
           rs.add(\"mongo_secondary1:27018\");
           rs.add(\"mongo_secondary2:27019\");
@@ -193,16 +229,19 @@ services:
 
     depends_on:
       mongo_primary:
-        condition: service_started
+        condition: service_healthy
       mongo_secondary1:
-        condition: service_started
+        condition: service_healthy
       mongo_secondary2:
-        condition: service_started
+        condition: service_healthy
 
 volumes:
   mongodb_data1:
   mongodb_data2:
   mongodb_data3:
+  keyfile:
 
 networks:
-  mongonet: {}
+  mongonet: {
+    driver: bridge
+  }

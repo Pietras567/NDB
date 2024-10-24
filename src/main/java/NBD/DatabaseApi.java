@@ -27,7 +27,7 @@ public class DatabaseApi implements CRUDManager {
     //        .requiredReplicaSetName("rs0")
     //        .build();
     private final static ConnectionString connectionString = new ConnectionString("mongodb://mongo_primary:27017,mongo_secondary1:27018,mongo_secondary2:27019/replicaSet=rs0");
-    private final static MongoCredential credential = MongoCredential.createCredential("nbd", "admin", "nbdpassword".toCharArray());
+    private final static MongoCredential credential = MongoCredential.createCredential("nbdAdmin", "admin", "nbdpassword".toCharArray());
     private final static CodecRegistry pojoCodecRegistry = fromProviders(PojoCodecProvider.builder().automatic(true).build());
     private final static CodecRegistry codecRegistry = fromRegistries(MongoClientSettings.getDefaultCodecRegistry(), pojoCodecRegistry);
     private final static MongoClientSettings clientSettings = MongoClientSettings.builder()
