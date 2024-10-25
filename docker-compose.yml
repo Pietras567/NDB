@@ -6,24 +6,43 @@ services:
     hostname: mongo_primary
 
     environment:
-      #- MONGO_INITDB_ROOT_USERNAME=admin
-      #- MONGO_INITDB_ROOT_PASSWORD=admin
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=admin
       - MONGO_INITDB_DATABASE=admin
 
     ports:
       - "27017:27017"
 
-    restart: on-failure
+    restart: unless-stopped
 
     volumes:
       - mongodb_data1:/data/db
+      - mongo-configdb-data-1:/data/configdb
       - ./mongod.conf:/etc/mongod.conf
       - ./keyfile:/etc/mongo/keyfile
 
     command: >
       bash -c "
-        mongod --config /etc/mongod.conf --port 27017 &
-        sleep 30;
+        echo 'Starting mongod with authentication';
+        mongod --config /etc/mongod.conf --bind_ip_all --fork &
+        sleep 15; 
+      
+        echo 'Initiating replica set...';
+        mongosh --eval '
+          db = db.getSiblingDB(\"admin\");
+          rs.initiate()
+        ';
+        echo 'Creating user on primary...'; 
+        until mongosh --eval 'db.runCommand({ ping: 1 })'; do 
+          echo 'Waiting for MongoDB to start...'; 
+          sleep 2; 
+        done; 
+      
+        until mongosh --eval 'db.adminCommand({ isMaster: 1 }).ismaster'; do
+          echo 'Waiting for primary...';
+          sleep 5;  # Wydłużono czas oczekiwania
+        done;
+      
         mongosh --eval '
           db = db.getSiblingDB(\"admin\");
           db.createUser({
@@ -46,7 +65,9 @@ services:
           });
           print(\"Admin user created\");
         ';
+        tail -f /dev/null
       "
+    
 
     healthcheck:
       test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
@@ -57,8 +78,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '2'
-          memory: 4G
+          cpus: '5'
+          memory: 8G
 
     networks:
       - mongonet
@@ -71,29 +92,25 @@ services:
     hostname: mongo_secondary1
 
     environment:
-      #- MONGO_INITDB_ROOT_USERNAME=admin
-      #- MONGO_INITDB_ROOT_PASSWORD=admin
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=admin
       - MONGO_INITDB_DATABASE=admin
-
-    #depends_on:
-    #  mongo_primary:
-    #      condition: service_healthy
 
     ports:
       - "27018:27017"
 
-    restart: on-failure
+    restart: unless-stopped
 
     volumes:
       - mongodb_data2:/data/db
+      - mongo-configdb-data-2:/data/configdb
       - ./mongod.conf:/etc/mongod.conf
       - ./keyfile:/etc/mongo/keyfile
-
     command: >
       bash -c "
-        mongod --config /etc/mongod.conf --port 27019
+        mongod --config /etc/mongod.conf --bind_ip_all
       "
-      
+
     healthcheck:
       test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
       interval: 10s
@@ -103,8 +120,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '2'
-          memory: 4G
+          cpus: '5'
+          memory: 8G
 
     networks:
       - mongonet
@@ -117,30 +134,24 @@ services:
     hostname: mongo_secondary2
 
     environment:
-      #- MONGO_INITDB_ROOT_USERNAME=admin
-      #- MONGO_INITDB_ROOT_PASSWORD=admin
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=admin
       - MONGO_INITDB_DATABASE=admin
 
     ports:
       - "27019:27017"
 
-    restart: on-failure
-    
+    restart: unless-stopped
+
     volumes:
       - mongodb_data3:/data/db
+      - mongo-configdb-data-3:/data/configdb
       - ./mongod.conf:/etc/mongod.conf
       - ./keyfile:/etc/mongo/keyfile
-
     command: >
       bash -c "
-        mongod --config /etc/mongod.conf --port 27019
+        mongod --config /etc/mongod.conf --bind_ip_all
       "
-
-    #depends_on:
-      #mongo_primary:
-      #  condition: service_healthy
-      #mongo_secondary1:
-      #  condition: service_healthy
 
     healthcheck:
       test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
@@ -151,8 +162,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '2'
-          memory: 4G
+          cpus: '5'
+          memory: 8G
 
     networks:
       - mongonet
@@ -166,22 +177,14 @@ services:
 
     command: >
       bash -c "
-        sleep 60;
+        sleep 30;
         echo 'Initiating...' &&
-        mongosh --host mongo_primary:27017 --username nbd --password nbdpassword --authenticationDatabase admin --eval '
+        mongosh --host mongo_primary:27017 --username nbd --password nbdpassword --authenticationDatabase admin --authenticationMechanism SCRAM-SHA-256 --eval '
           db = db.getSiblingDB(\"admin\");
-          rs.initiate({
-            _id: \"rs0\",
-            version: 1,
-            members: [
-              { _id: 0, host: \"mongo_primary:27017\" }
-            ]
-          });
-  
           rs.add(\"mongo_secondary1:27018\");
           rs.add(\"mongo_secondary2:27019\");
-          rs.status();
-          ';
+          printjson(rs.status());
+        ';
       "
 
     restart: "no"
@@ -199,9 +202,13 @@ services:
 
 volumes:
   mongodb_data1:
+  mongo-configdb-data-1:
   mongodb_data2:
+  mongo-configdb-data-2:
   mongodb_data3:
+  mongo-configdb-data-3:
 
 networks:
-  mongonet:
+  mongonet: {
     driver: bridge
+  }
