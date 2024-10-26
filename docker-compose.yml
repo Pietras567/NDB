@@ -175,8 +175,8 @@ services:
                 echo 'Initiating...' &&
                 mongosh --host mongo_primary:27017 --username nbd --password nbdpassword --authenticationDatabase admin --authenticationMechanism SCRAM-SHA-256 --eval '
                     db = db.getSiblingDB(\"admin\");
-                    rs.add(\"mongo_secondary1:27018\");
-                    rs.add(\"mongo_secondary2:27019\");
+                    rs.add(\"mongo_secondary1:27017\");
+                    rs.add(\"mongo_secondary2:27017\");
                     printjson(rs.status());
                 ';
             "
