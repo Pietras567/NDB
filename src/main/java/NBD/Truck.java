@@ -1,5 +1,7 @@
 package NBD;
+import org.bson.codecs.pojo.annotations.BsonDiscriminator;
 
+@BsonDiscriminator
 public class Truck extends Vehicle {
     private int loadCapacity;
 

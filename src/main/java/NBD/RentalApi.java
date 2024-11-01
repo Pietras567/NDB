@@ -25,7 +25,6 @@ public class RentalApi {
             if(!list.isEmpty()) {
                 for (Rent r : list) {
                     if((LocalDateTime.now().isAfter(r.getStartDate()) || LocalDateTime.now().isEqual(r.getStartDate())) && (LocalDateTime.now().isBefore(r.getEndDate())) || LocalDateTime.now().isEqual(r.getEndDate())) {
-                        System.out.println("zwracamy");
                         wypozyczony = true;
                         rent = r;
                     }
@@ -36,12 +35,13 @@ public class RentalApi {
                 if(rent.getClient().getId() == client.getId()) {
                     rent.setEndDate(LocalDateTime.now());
                     databaseApi.updateEntity(rent, "rents", rent.getId());
+                    System.out.println("Pojazd został zwrócony");
                 } else {
                     System.out.println("Pojazd byl wypozyczony przez innego klienta. Nie mozesz go zwrocic.");
                     return false;
                 }
             } else {
-                System.out.println("nie zwracamy");
+                System.out.println("Nie można zwrócić pojazdu, nie jest on aktualnie wypożyczony");
                 return false;
             }
         } catch (Exception e) {
@@ -62,14 +62,14 @@ public class RentalApi {
             if(!list.isEmpty()) {
                 for (Rent r : list) {
                     if((LocalDateTime.now().isAfter(r.getStartDate()) || LocalDateTime.now().isEqual(r.getStartDate())) && (LocalDateTime.now().isBefore(r.getEndDate())) || LocalDateTime.now().isEqual(r.getEndDate())) {
-                        System.out.println("nie jadymy");
+                        System.out.println("Nie można wypożyczyć pojazdu, jest on aktualnie wypożyczony");
                         wypozyczony = true;
                     }
                 }
             }
 
             if(!wypozyczony) {
-                System.out.println("jadymy");
+                System.out.println("Pojazd został wypożyczony");
                 Rent rent = new Rent(client.getId(), vehicle.getId(), LocalDateTime.now(), LocalDateTime.now().plusDays(days));
                 //rent.setClient(client);
                 //rent.setVehicle(vehicle);
@@ -85,6 +85,11 @@ public class RentalApi {
     }
 
     public <T> List<T> getAllEntities(Class<T> entityClass) {
+        MongoCollection<T> collection = database.getCollection(entityClass.getSimpleName().toLowerCase() + "s", entityClass);
+        return collection.find().into(new ArrayList<>());
+    }
+
+    public <T extends Vehicle> List<T> getAllVehicles(Class<T> entityClass) {
         MongoCollection<T> collection = database.getCollection(entityClass.getSimpleName().toLowerCase() + "s", entityClass);
         return collection.find().into(new ArrayList<>());
     }

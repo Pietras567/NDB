@@ -48,7 +48,7 @@ public class Client {
         this.age = age;
     }
 
-    public List<Rent> getRents() {
+    public List<Rent> allRents() {
         DatabaseApi api = new DatabaseApi();
         MongoDatabase database = api.getDatabase();
         MongoCollection<Rent> collection = database.getCollection("rents", Rent.class);
@@ -62,7 +62,7 @@ public class Client {
                 "id=" + Id +
                 ", name='" + name + '\'' +
                 ", age=" + age +
-                ", rents=" + this.getRents() +
+                ", rents=" + this.allRents() +
                 '}';
     }
 

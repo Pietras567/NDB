@@ -11,13 +11,13 @@ public class Main {
     public static void main(String[] args) {
         DatabaseApi databaseApi = new DatabaseApi();
         RentalApi rentalApi = new RentalApi();
-//        Vehicle car1 = new Car("yaris", 1500, 261, 5);
-//        Vehicle car2 = new Car("126p", 700, 30, 5);
-//        Vehicle car3 = new Car("poldon", 1200, 161, 5);
-//
-//        databaseApi.addEntity(car1);
-//        databaseApi.addEntity(car2);
-//        databaseApi.addEntity(car3);
+        Vehicle car1 = new Car("yaris", 1500, 261, 5);
+        Vehicle car2 = new Car("126p", 700, 30, 5);
+        Vehicle car3 = new Car("poldon", 1200, 161, 5);
+
+        databaseApi.addEntity(car1, "vehicles");
+        databaseApi.addEntity(car2, "vehicles");
+        databaseApi.addEntity(car3, "vehicles");
 
 
         System.out.println("\nWitamy w CarRental!\n");
@@ -36,7 +36,7 @@ public class Main {
                     int choice2 = scanner.nextInt();
                     switch (choice2) {
                         case 1:
-                            for (Vehicle v : rentalApi.getAllEntities(Vehicle.class)) {
+                            for (Vehicle v : rentalApi.getAllVehicles(Vehicle.class)) {
                                 System.out.println(v.toString());
                             }
                             break;
@@ -56,9 +56,9 @@ public class Main {
                     break;
                 case 2:
                     System.out.println("Podaj id pojazdu ktory chcesz wypozyczyc : \n");
-                    ObjectId vehicleId = new ObjectId(String.valueOf(scanner.nextInt()));
+                    ObjectId vehicleId = new ObjectId((scanner.next()));
                     System.out.println("Podaj id swojego profilu : \n");
-                    ObjectId clientId = new ObjectId(String.valueOf(scanner.nextInt()));
+                    ObjectId clientId = new ObjectId((scanner.next()));
                     System.out.println("Podaj na jak dlugo wypozyczasz (dni) : \n");
                     int days = scanner.nextInt();
 

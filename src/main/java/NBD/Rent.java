@@ -1,6 +1,8 @@
 package NBD;
 
 import java.time.LocalDateTime;
+
+import org.bson.codecs.pojo.annotations.BsonIgnore;
 import org.bson.types.ObjectId;
 import org.bson.codecs.pojo.annotations.BsonId;
 import org.bson.codecs.pojo.annotations.BsonProperty;
@@ -74,13 +76,18 @@ public class Rent {
         this.endDate = endDate;
     }
 
+    @BsonIgnore
     public Vehicle getVehicle() {
         DatabaseApi api = new DatabaseApi();
         return api.getEntity(Vehicle.class, "vehicles", vehicle_id);
     }
-
+    @BsonIgnore
     public Client getClient() {
         DatabaseApi api = new DatabaseApi();
         return api.getEntity(Client.class, "clients", client_id);
+    }
+
+    public void setId(ObjectId id) {
+        this.id = id;
     }
 }

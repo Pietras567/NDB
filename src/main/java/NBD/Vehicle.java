@@ -1,12 +1,10 @@
 package NBD;
 import java.util.ArrayList;
 import java.util.List;
-
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import org.bson.types.ObjectId;
 import org.bson.codecs.pojo.annotations.BsonId;
-
 import static com.mongodb.client.model.Filters.eq;
 
 public abstract class Vehicle {
@@ -15,12 +13,10 @@ public abstract class Vehicle {
     private String Name;
     private int Weight;
     private int Power;
-    //private List<Rent> rents = new ArrayList<>();
 
     public Vehicle() {
 
     }
-
 
     public String getName() {
         return Name;
@@ -56,7 +52,7 @@ public abstract class Vehicle {
         Power = power;
     }
 
-    public List<Rent> getRents() {
+    public List<Rent> allRents() {
         DatabaseApi api = new DatabaseApi();
         MongoDatabase database = api.getDatabase();
         MongoCollection<Rent> collection = database.getCollection("rents", Rent.class);
@@ -71,5 +67,9 @@ public abstract class Vehicle {
                 ", weight=" + Weight +
                 ", Power=" + Power +
                 '}';
+    }
+
+    public void setId(ObjectId id) {
+        this.Id = id;
     }
 }

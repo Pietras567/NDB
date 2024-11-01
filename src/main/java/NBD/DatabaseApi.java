@@ -3,22 +3,19 @@ package NBD;
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.MongoCredential;
-import com.mongodb.ServerAddress;
 import com.mongodb.client.*;
-import com.mongodb.connection.ClusterSettings;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Updates;
 import org.bson.Document;
+import org.bson.codecs.BsonValueCodecProvider;
+import org.bson.codecs.DocumentCodecProvider;
 import org.bson.codecs.configuration.CodecRegistries;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
 import org.bson.types.ObjectId;
-
-import java.util.Collections;
-import java.util.concurrent.atomic.AtomicLong;
-
-import static com.mongodb.MongoClientSettings.getDefaultCodecRegistry;
+import java.util.ArrayList;
 import static com.mongodb.client.model.Filters.eq;
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
-import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 
 
 public class DatabaseApi implements CRUDManager {
@@ -26,22 +23,30 @@ public class DatabaseApi implements CRUDManager {
     //        .hosts(Collections.singletonList(new ServerAddress("mongo_primary", 27017)))  // Adres MongoDB
     //        .requiredReplicaSetName("rs0")
     //        .build();
+
+    private final static CodecRegistry pojoCodecRegistry = fromProviders(PojoCodecProvider.builder().automatic(true).build());
+    //private final static CodecRegistry customCodecRegistry = CodecRegistries.fromCodecs(new VehicleCodec(pojoCodecRegistry));
+
+    private final static CodecRegistry customCodecRegistry = CodecRegistries.fromRegistries(
+            MongoClientSettings.getDefaultCodecRegistry(),
+            CodecRegistries.fromProviders(new BsonValueCodecProvider(), new DocumentCodecProvider()),
+            CodecRegistries.fromCodecs(new VehicleCodec(pojoCodecRegistry)),
+            pojoCodecRegistry
+    );
+
+
+    //private final static CodecRegistry codecRegistry = fromRegistries(MongoClientSettings.getDefaultCodecRegistry(), pojoCodecRegistry);
     private final static ConnectionString connectionString = new ConnectionString("mongodb://mongo_primary:27017,mongo_secondary1:27018,mongo_secondary2:27019/replicaSet=rs0");
     private final static MongoCredential credential = MongoCredential.createCredential("nbd", "admin", "nbdpassword".toCharArray());
-    private final static CodecRegistry pojoCodecRegistry = fromProviders(PojoCodecProvider.builder().automatic(true).build());
-    private final static CodecRegistry codecRegistry = fromRegistries(MongoClientSettings.getDefaultCodecRegistry(), pojoCodecRegistry);
     private final static MongoClientSettings clientSettings = MongoClientSettings.builder()
             .credential(credential)
             //.applyToClusterSettings(builder -> builder.applySettings(clusterSettings))
             .applyConnectionString(connectionString)
-            .codecRegistry(codecRegistry)
+            .codecRegistry(customCodecRegistry)
+            //.codecRegistry(codecRegistry)
             .build();
     private final static MongoClient mongoClient = MongoClients.create(clientSettings);
     private final static MongoDatabase mongoDatabase = mongoClient.getDatabase("admin");
-
-    private static final AtomicLong clientCounter = new AtomicLong(1);
-    private static final AtomicLong vehicleCounter = new AtomicLong(1);
-    private static final AtomicLong rentCounter = new AtomicLong(1);
 
     public static MongoDatabase getDatabase() {
         return mongoDatabase;
@@ -51,10 +56,34 @@ public class DatabaseApi implements CRUDManager {
         return mongoClient;
     }
 
+    // Inicjalizacja licznika dla kolekcji, jeśli nie istnieje
+    private void initializeCounterIfNotExists(String sequenceName) {
+        if (!mongoDatabase.listCollectionNames().into(new ArrayList<>()).contains("counters")) {
+            mongoDatabase.createCollection("counters");
+        }
+
+        MongoCollection<Document> counters = mongoDatabase.getCollection("counters");
+        Document existingCounter = counters.find(eq("_id", sequenceName)).first();
+
+        if (existingCounter == null) {
+            counters.insertOne(new Document("_id", sequenceName).append("sequence_value", 0));
+        }
+    }
+
+    // Pobierz kolejną wartość ID
+    private int getNextSequenceValue(String sequenceName) {
+        MongoCollection<Document> counters = mongoDatabase.getCollection("counters");
+        Document sequenceDocument = counters.findOneAndUpdate(
+                Filters.eq("_id", sequenceName),
+                Updates.inc("sequence_value", 1)
+        );
+        return sequenceDocument.getInteger("sequence_value");
+    }
+
     public DatabaseApi() {
-        //getDatabase().createCollection("vehicles");
-        //getDatabase().createCollection("rents");
-        //getDatabase().createCollection("clients");
+        initializeCounterIfNotExists("clients");
+        initializeCounterIfNotExists("vehicles");
+        initializeCounterIfNotExists("rents");
     }
 
     @Override
@@ -66,20 +95,17 @@ public class DatabaseApi implements CRUDManager {
             long id;
             switch (collectionName) {
                 case "clients":
-                    id = clientCounter.getAndIncrement();
+                    id = getNextSequenceValue("clients");
                     break;
                 case "vehicles":
-                    id = vehicleCounter.getAndIncrement();
+                    id = getNextSequenceValue("vehicles");
                     break;
                 case "rents":
-                    id = rentCounter.getAndIncrement();
+                    id = getNextSequenceValue("rents");
                     break;
                 default:
                     throw new IllegalArgumentException("Unknown collection: " + collectionName);
             }
-            System.out.println(id);
-            System.out.println(String.valueOf(id));
-            System.out.println(new ObjectId(String.format("%024x", id)));
             entity.getClass().getMethod("setId", ObjectId.class).invoke(entity, new ObjectId(String.format("%024x", id)));
             collection.insertOne(session, entity);
             session.commitTransaction();
