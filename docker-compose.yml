@@ -1,207 +1,100 @@
+version: '3.8'
 services:
-    mongo_primary:
-        image: mongo:8.0.1
-        container_name: mongo_primary
-        hostname: mongo_primary
-        mem_limit: 2048m        # Limit pamięci
-        cpus: "1"               # Limit CPU
-
-        environment:
-            - MONGO_INITDB_ROOT_USERNAME=admin
-            - MONGO_INITDB_ROOT_PASSWORD=admin
-            - MONGO_INITDB_DATABASE=admin
-
+    mongo1:
+        build: .
+        image: mongocustom:8.0.1
+        container_name: mongo1
+        hostname: mongo1
+        networks:
+            - mongonet
         ports:
             - "27017:27017"
-
-        restart: unless-stopped
-
-        volumes:
-            - mongodb_data1:/data/db
-            - mongo-configdb-data-1:/data/configdb
-            - ./mongod.conf:/etc/mongod.conf
-            - ./keyfile:/etc/mongo/keyfile
-
-        command: >
-            bash -c "
-                chmod 600 /etc/mongo/keyfile;
-                chmod 600 /etc/mongod.conf;
-                
-                echo 'Starting mongod with authentication';
-                mongod --config /etc/mongod.conf --bind_ip_all --fork &
-                sleep 15; 
-
-                echo 'Initiating replica set...';
-                mongosh --eval '
-                    db = db.getSiblingDB(\"admin\");
-                    rs.initiate()
-                ';
-                echo 'Creating user on primary...'; 
-                until mongosh --eval 'db.runCommand({ ping: 1 })'; do 
-                    echo 'Waiting for MongoDB to start...'; 
-                    sleep 2; 
-                done; 
-
-                until mongosh --eval 'db.adminCommand({ isMaster: 1 }).ismaster'; do
-                    echo 'Waiting for primary...';
-                    sleep 5;  # Wydłużono czas oczekiwania
-                done;
-
-                mongosh --eval '
-                    db = db.getSiblingDB(\"admin\");
-                    db.createUser({
-                        user: \"nbd\",
-                        pwd: \"nbdpassword\",
-                        roles: [
-                            { role: \"root\", db: \"admin\" }, 
-                            { role: \"clusterAdmin\", db: \"admin\" },
-                            { role: \"readWrite\", db: \"admin\" },
-                            { role: \"dbOwner\", db: \"admin\" },
-                            { role: \"dbAdmin\", db: \"admin\" },
-                            { role: \"dbAdminAnyDatabase\", db: \"admin\" },
-                            { role: \"read\", db: \"admin\" },
-                            { role: \"userAdminAnyDatabase\", db: \"admin\" }
-                        ],
-                        mechanisms : [
-                            \"SCRAM-SHA-1\",
-                            \"SCRAM-SHA-256\"
-                        ]
-                    });
-                    print(\"Admin user created\");
-                ';
-                tail -f /dev/null
-            "
-
-        healthcheck:
-            test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
-            interval: 10s
-            timeout: 2s
-            retries: 5
-
-        networks:
-            - mongonet
-
-
-    mongo_secondary1:
-        image: mongo:8.0.1
-        container_name: mongo_secondary1
-        hostname: mongo_secondary1
-        mem_limit: 2048m        # Limit pamięci
-        cpus: "1"               # Limit CPU
-
         environment:
             - MONGO_INITDB_ROOT_USERNAME=admin
-            - MONGO_INITDB_ROOT_PASSWORD=admin
-            - MONGO_INITDB_DATABASE=admin
+            - MONGO_INITDB_ROOT_PASSWORD=adminpassword
+            - MONGO_INITDB_DATABASE=test
+        command: --config /etc/mongod.conf --port 27017
 
-        ports:
-            - "27018:27017"
-
-        restart: unless-stopped
-
-        volumes:
-            - mongodb_data2:/data/db
-            - mongo-configdb-data-2:/data/configdb
-            - ./mongod.conf:/etc/mongod.conf
-            - ./keyfile:/etc/mongo/keyfile
-
-        command: >
-            bash -c "
-                chmod 600 /etc/mongo/keyfile;
-                chmod 600 /etc/mongod.conf;
-                mongod --config /etc/mongod.conf --bind_ip_all
-            "
 
         healthcheck:
-            test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
+            test: [ "CMD", "mongosh", "--port", "27017", "--eval", "db.adminCommand('ping')" ]
             interval: 10s
             timeout: 2s
             retries: 5
 
+    mongo2:
+        build: .
+        image: mongocustom:8.0.1
+        container_name: mongo2
+        hostname: mongo2
         networks:
             - mongonet
-
-
-    mongo_secondary2:
-        image: mongo:8.0.1
-        container_name: mongo_secondary2
-        hostname: mongo_secondary2
-        mem_limit: 2048m        # Limit pamięci
-        cpus: "1"               # Limit CPU
-
+        ports:
+            - "27018:27018"
         environment:
             - MONGO_INITDB_ROOT_USERNAME=admin
-            - MONGO_INITDB_ROOT_PASSWORD=admin
-            - MONGO_INITDB_DATABASE=admin
+            - MONGO_INITDB_ROOT_PASSWORD=adminpassword
+            - MONGO_INITDB_DATABASE=test
+        command: --config /etc/mongod.conf --port 27018
 
-        ports:
-            - "27019:27017"
-
-        restart: unless-stopped
-
-        volumes:
-            - mongodb_data3:/data/db
-            - mongo-configdb-data-3:/data/configdb
-            - ./mongod.conf:/etc/mongod.conf
-            - ./keyfile:/etc/mongo/keyfile
-
-        command: >
-            bash -c "
-                chmod 600 /etc/mongo/keyfile;
-                chmod 600 /etc/mongod.conf;
-                mongod --config /etc/mongod.conf --bind_ip_all
-            "
 
         healthcheck:
-            test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
+            test: [ "CMD", "mongosh", "--port", "27018", "--eval", "db.adminCommand('ping')" ]
             interval: 10s
             timeout: 2s
             retries: 5
 
+    mongo3:
+        build: .
+        image: mongocustom:8.0.1
+        container_name: mongo3
+        hostname: mongo3
         networks:
             - mongonet
+        ports:
+            - "27019:27019"
+        environment:
+            - MONGO_INITDB_ROOT_USERNAME=admin
+            - MONGO_INITDB_ROOT_PASSWORD=adminpassword
+            - MONGO_INITDB_DATABASE=test
+        command: --config /etc/mongod.conf --port 27019
 
+
+        healthcheck:
+            test: [ "CMD", "mongosh", "--port", "27019", "--eval", "db.adminCommand('ping')" ]
+            interval: 10s
+            timeout: 2s
+            retries: 5
 
     mongodb_setup:
-        image: mongo:8.0.1
-        container_name: mongo_setup
+        build: .
+        image: mongocustom:8.0.1
         hostname: mongodb_setup
-        mem_limit: 2048m        # Limit pamięci
-        cpus: "1"               # Limit CPU
-
-        command: >
-            bash -c "
-                sleep 30;
-                echo 'Initiating...' &&
-                mongosh --host mongo_primary:27017 --username nbd --password nbdpassword --authenticationDatabase admin --authenticationMechanism SCRAM-SHA-256 --eval '
-                    db = db.getSiblingDB(\"admin\");
-                    rs.add(\"mongo_secondary1:27017\");
-                    rs.add(\"mongo_secondary2:27017\");
-                    printjson(rs.status());
-                ';
-            "
-
-        restart: "no"
-
+        container_name: mongodb_setup
         networks:
             - mongonet
-
         depends_on:
-            mongo_primary:
+            mongo1:
                 condition: service_healthy
-            mongo_secondary1:
+            mongo2:
                 condition: service_healthy
-            mongo_secondary2:
+            mongo3:
                 condition: service_healthy
 
-volumes:
-    mongodb_data1:
-    mongo-configdb-data-1:
-    mongodb_data2:
-    mongo-configdb-data-2:
-    mongodb_data3:
-    mongo-configdb-data-3:
-
+        command: >
+            mongosh --host mongo1:27017 --username admin --password adminpassword --authenticationDatabase admin --eval
+            '
+            rs.initiate(
+              {
+                _id: "replica_set_single",
+                version: 1,
+                members: [
+                    { _id: 0, host : "mongo1:27017"},
+                    { _id: 1, host : "mongo2:27018"},
+                    { _id: 2, host : "mongo3:27019"}
+                ]
+              }
+            );
+            '
 networks:
-    mongonet:
-        driver: bridge
+    mongonet: { }

@@ -39,7 +39,7 @@ public class VehicleCodec implements Codec<Vehicle> {
                 int seats = reader.readInt32("seats");
                 weight = reader.readInt32("weight");
 
-                vehicle = new Car(name, power, seats, weight);
+                vehicle = new Car(name, weight, power, seats);
                 //vehicle = codecRegistry.get(Car.class).decode(reader, decoderContext);
                 ((Car) vehicle).setSeats(seats);
                 break;

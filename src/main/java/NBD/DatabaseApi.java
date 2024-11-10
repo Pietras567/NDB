@@ -11,21 +11,32 @@ import org.bson.codecs.BsonValueCodecProvider;
 import org.bson.codecs.DocumentCodecProvider;
 import org.bson.codecs.configuration.CodecRegistries;
 import org.bson.codecs.configuration.CodecRegistry;
+import org.bson.codecs.pojo.Conventions;
 import org.bson.codecs.pojo.PojoCodecProvider;
 import org.bson.types.ObjectId;
 import java.util.ArrayList;
+import java.util.List;
+
 import static com.mongodb.client.model.Filters.eq;
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 
 
 public class DatabaseApi implements CRUDManager {
-    //private final static ClusterSettings clusterSettings = ClusterSettings.builder()
-    //        .hosts(Collections.singletonList(new ServerAddress("mongo_primary", 27017)))  // Adres MongoDB
-    //        .requiredReplicaSetName("rs0")
-    //        .build();
 
-    private final static CodecRegistry pojoCodecRegistry = fromProviders(PojoCodecProvider.builder().automatic(true).build());
-    //private final static CodecRegistry customCodecRegistry = CodecRegistries.fromCodecs(new VehicleCodec(pojoCodecRegistry));
+    private final static ConnectionString connectionString = new ConnectionString(
+            "mongodb://mongo1:27017,mongo2:27018,mongo3:27019/?replicaSet=replica_set_single"
+    );
+
+    private final static MongoCredential credential = MongoCredential.createCredential(
+            "admin", "admin", "adminpassword".toCharArray());
+
+
+    private final static CodecRegistry pojoCodecRegistry = CodecRegistries.fromProviders(
+            PojoCodecProvider.builder()
+                    .automatic(true)
+                    //.conventions(List.of(Conventions.ANNOTATION_CONVENTION)) // dodana ta opcja
+                    .build());
+
 
     private final static CodecRegistry customCodecRegistry = CodecRegistries.fromRegistries(
             MongoClientSettings.getDefaultCodecRegistry(),
@@ -35,9 +46,6 @@ public class DatabaseApi implements CRUDManager {
     );
 
 
-    //private final static CodecRegistry codecRegistry = fromRegistries(MongoClientSettings.getDefaultCodecRegistry(), pojoCodecRegistry);
-    private final static ConnectionString connectionString = new ConnectionString("mongodb://mongo_primary:27017,mongo_secondary1:27018,mongo_secondary2:27019/replicaSet=rs0");
-    private final static MongoCredential credential = MongoCredential.createCredential("nbd", "admin", "nbdpassword".toCharArray());
     private final static MongoClientSettings clientSettings = MongoClientSettings.builder()
             .credential(credential)
             //.applyToClusterSettings(builder -> builder.applySettings(clusterSettings))

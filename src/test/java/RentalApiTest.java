@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public class RentalApiTest {
-/*
+
     private final DatabaseApi databaseApi = new DatabaseApi();
     @Test
     public void getAllEntitiesTest() {
@@ -14,16 +14,14 @@ public class RentalApiTest {
         Client client = new Client("Tom", 24);
         Vehicle car = new Car("Yaris", 1300, 200, 4);
 
-        databaseApi.addEntity(client);
-        databaseApi.addEntity(car);
+        databaseApi.addEntity(client, "clients");
+        databaseApi.addEntity(car, "vehicles");
 
         LocalDateTime start = LocalDateTime.now();
         LocalDateTime end = start.plusDays(1);
         Rent rent = new Rent(client.getId(), car.getId(),start,end);
-        rent.setClient(client);
-        rent.setVehicle(car);
 
-        databaseApi.addEntity(rent);
+        databaseApi.addEntity(rent, "rents");
         List<Rent> temp = rentalApi.getAllEntities(Rent.class);
         Rent last = temp.getLast();
         assertEquals(rent.getId(), last.getId());
@@ -35,8 +33,8 @@ public class RentalApiTest {
         RentalApi rentalApi = new RentalApi();
         Client client = new Client("Pepe", 54);
         Vehicle car = new Car("i20", 1300, 100, 5);
-        databaseApi.addEntity(client);
-        databaseApi.addEntity(car);
+        databaseApi.addEntity(client, "clients");
+        databaseApi.addEntity(car, "vehicles");
         assertTrue(rentalApi.wypozycz(car, client, 50));
         assertTrue(rentalApi.oddaj(car, client));
         List<Rent> temp = rentalApi.getAllEntities(Rent.class);
@@ -49,8 +47,8 @@ public class RentalApiTest {
         RentalApi rentalApi = new RentalApi();
         Client client = new Client("antonio", 44);
         Vehicle car = new Car("i30", 1300, 200, 5);
-        databaseApi.addEntity(client);
-        databaseApi.addEntity(car);
+        databaseApi.addEntity(client, "clients");
+        databaseApi.addEntity(car, "vehicles");
         assertTrue(rentalApi.wypozycz(car, client, 0));
         assertFalse(rentalApi.oddaj(car, client));
     }
@@ -59,10 +57,10 @@ public class RentalApiTest {
     public void wypozyczPositiveTest() {
         RentalApi rentalApi = new RentalApi();
         Vehicle motorbike = new Motorbike("kawasaki", 350,250,1);
-        databaseApi.addEntity(motorbike);
-        Vehicle car = databaseApi.getEntity(Vehicle.class, motorbike.getId());
+        databaseApi.addEntity(motorbike, "vehicles");
+        Vehicle car = databaseApi.getEntity(Vehicle.class, "vehicles" ,motorbike.getId());
         Client client = new Client("Adrian", 24);
-        databaseApi.addEntity(client);
+        databaseApi.addEntity(client, "clients");
 
         assertTrue(rentalApi.wypozycz(car, client, 2));
 
@@ -77,10 +75,9 @@ public class RentalApiTest {
         RentalApi rentalApi = new RentalApi();
         Vehicle rented = new Truck("scania", 4000, 460, 14000);
         Client client = new Client("Bob", 24);
-        databaseApi.addEntity(rented);
-        databaseApi.addEntity(client);
+        databaseApi.addEntity(rented, "vehicles");
+        databaseApi.addEntity(client, "clients");
         assertTrue(rentalApi.wypozycz(rented, client, 100));
         assertFalse(rentalApi.wypozycz(rented, client, 1));
     }
- */
 }

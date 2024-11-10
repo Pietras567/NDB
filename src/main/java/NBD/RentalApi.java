@@ -16,7 +16,7 @@ public class RentalApi {
     public boolean oddaj(Vehicle vehicle, Client client) {
         try {
             ObjectId vehicleId = vehicle.getId();
-            System.out.println(vehicleId);
+//            System.out.println(vehicleId);
             MongoCollection<Rent> rentCollection = database.getCollection("rents", Rent.class);
 
             List<Rent> list = rentCollection.find(eq("vehicle_id", vehicleId)).into(new ArrayList<>());
@@ -32,7 +32,7 @@ public class RentalApi {
             }
 
             if(wypozyczony) {
-                if(rent.getClient().getId() == client.getId()) {
+                if(rent.getClient().getId().equals(client.getId())) {
                     rent.setEndDate(LocalDateTime.now());
                     databaseApi.updateEntity(rent, "rents", rent.getId());
                     System.out.println("Pojazd został zwrócony");

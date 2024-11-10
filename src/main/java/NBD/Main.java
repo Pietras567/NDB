@@ -11,22 +11,15 @@ public class Main {
     public static void main(String[] args) {
         DatabaseApi databaseApi = new DatabaseApi();
         RentalApi rentalApi = new RentalApi();
-        Vehicle car1 = new Car("yaris", 1500, 261, 5);
-        Vehicle car2 = new Car("126p", 700, 30, 5);
-        Vehicle car3 = new Car("poldon", 1200, 161, 5);
-
-        databaseApi.addEntity(car1, "vehicles");
-        databaseApi.addEntity(car2, "vehicles");
-        databaseApi.addEntity(car3, "vehicles");
 
 
         System.out.println("\nWitamy w CarRental!\n");
         Scanner scanner = new Scanner(System.in);
         do {
             System.out.print("Podaj co zrobic:\n" +
-                    "1 - Wyswietlic informacje\n" +
-                    "2 - Wypozyczyc pojazd\n" +
-                    "3 - Zwrocic pojazd\n" +
+                    "1 - Wyswietl informacje\n" +
+                    "2 - Wypozycz pojazd\n" +
+                    "3 - Zwroc pojazd\n" +
                     "4 - Zarejestruj sie\n" +
                     "Aby wyjsc wprowadz dowolna inna wartosc.\n ");
             int choice1 = scanner.nextInt();
