@@ -23,6 +23,7 @@ public class Main {
                     "4 - Zarejestruj sie\n" +
                     "Aby wyjsc wprowadz dowolna inna wartosc.\n ");
             int choice1 = scanner.nextInt();
+            String tempId;
             switch (choice1) {
                 case 1:
                     System.out.print("Podaj co wyswietlic (1 - Pojazdy, 2 - klientow, 3 - Wypozyczenia) : \n");
@@ -48,10 +49,22 @@ public class Main {
                     }
                     break;
                 case 2:
+
                     System.out.println("Podaj id pojazdu ktory chcesz wypozyczyc : \n");
-                    ObjectId vehicleId = new ObjectId((scanner.next()));
+                    tempId = scanner.next();
+                    tempId = String.format("%24s", tempId);
+                    tempId = tempId.replace(' ','0');
+
+
+                    ObjectId vehicleId = new ObjectId(tempId);
+                    System.out.println("po stworzeniu vehicleid");
+
                     System.out.println("Podaj id swojego profilu : \n");
-                    ObjectId clientId = new ObjectId((scanner.next()));
+
+                    tempId = scanner.next();
+                    tempId = String.format("%24s", tempId);
+                    tempId = tempId.replace(' ','0');
+                    ObjectId clientId = new ObjectId(tempId);
                     System.out.println("Podaj na jak dlugo wypozyczasz (dni) : \n");
                     int days = scanner.nextInt();
 
@@ -61,9 +74,17 @@ public class Main {
                     break;
                 case 3:
                     System.out.println("Podaj id pojazdu do zwrotu : \n");
-                    ObjectId returnedVehicleId = new ObjectId(String.valueOf(scanner.nextInt()));
+                    tempId = scanner.next();
+                    tempId = String.format("%24s", tempId);
+                    tempId = tempId.replace(' ','0');
+                    ObjectId returnedVehicleId = new ObjectId(tempId);
+
                     System.out.println("Podaj id swojego profilu : \n");
-                    ObjectId returningClientId = new ObjectId(String.valueOf(scanner.nextInt()));
+                    tempId = scanner.next();
+                    tempId = String.format("%24s", tempId);
+                    tempId = tempId.replace(' ','0');
+                    ObjectId returningClientId = new ObjectId(tempId);
+
                     Vehicle returnedVehicle = databaseApi.getEntity(Vehicle.class, "vehicles", returnedVehicleId);
                     Client returningClient = databaseApi.getEntity(Client.class, "clients", returningClientId);
                     rentalApi.oddaj(returnedVehicle, returningClient);

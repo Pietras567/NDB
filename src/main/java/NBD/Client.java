@@ -59,7 +59,7 @@ public class Client {
     @Override
     public String toString() {
         return "Client{" +
-                "id=" + Id +
+                "id=" + Id.toString().replaceFirst("^0+(?!$)", "") +
                 ", name='" + name + '\'' +
                 ", age=" + age +
                 ", rents=" + this.allRents() +

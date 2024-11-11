@@ -62,7 +62,7 @@ public abstract class Vehicle {
     @Override
     public String toString() {
         return "Vehicle{" +
-                "id=" + Id +
+                "id=" + Id.toString().replaceFirst("^0+(?!$)", "") +
                 ", name='" + Name + '\'' +
                 ", weight=" + Weight +
                 ", Power=" + Power +

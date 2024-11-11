@@ -31,9 +31,9 @@ public class Rent {
     @Override
     public String toString() {
         return "Rent{" +
-                "id=" + id +
-                ", client_id=" + client_id +
-                ", vehicle_id=" + vehicle_id +
+                "id=" + id.toString().replaceFirst("^0+(?!$)", "") +
+                ", client_id=" + client_id.toString().replaceFirst("^0+(?!$)", "") +
+                ", vehicle_id=" + vehicle_id.toString().replaceFirst("^0+(?!$)", "") +
                 ", startDate=" + startDate +
                 ", endDate=" + endDate +
                 '}';
