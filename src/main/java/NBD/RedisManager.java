@@ -45,8 +45,8 @@ public class RedisManager {
         return response != null ? Document.parse(response) : null;
     }
 
-    public void setDocument(String key, Document document) {
-        pool.set(key, document.toJson());
+    public void setDocument(String key, Document document, int TTL) {
+        pool.setex(key, TTL, document.toJson());
     }
 
     public void removeDocument(String key) {

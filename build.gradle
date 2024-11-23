@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'me.champeau.jmh' version '0.7.1'
 }
 
 group = 'NBD'
@@ -24,6 +25,8 @@ dependencies {
     implementation 'org.apache.logging.log4j:log4j-slf4j-impl:3.0.0-beta2'
     implementation 'org.mongodb:mongodb-driver-sync:5.1.1'
     implementation 'redis.clients:jedis:5.2.0'
+    implementation 'org.openjdk.jmh:jmh-generator-annprocess:1.37'
+    implementation 'org.openjdk.jmh:jmh-core:1.37'
 }
 
 test {

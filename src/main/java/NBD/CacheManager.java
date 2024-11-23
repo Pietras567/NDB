@@ -2,7 +2,8 @@ package NBD;
 
 import org.bson.Document;
 import org.bson.types.ObjectId;
-
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.lang.reflect.InvocationTargetException;
 
 public class CacheManager implements CRUDManager {
@@ -11,6 +12,29 @@ public class CacheManager implements CRUDManager {
 
     @Override
     public <T> void addEntity(T entity, String collectionName) {
+        int TTL;
+        switch (collectionName) {
+            case "clients":
+                TTL = 1800;
+                break;
+            case "vehicles":
+                TTL = 1800;
+                break;
+            case "rents":
+                LocalDateTime startTime;
+                LocalDateTime endTime;
+                try {
+                    startTime = (LocalDateTime) entity.getClass().getMethod("getStartDate").invoke(entity);
+                    endTime = (LocalDateTime) entity.getClass().getMethod("getEndDate").invoke(entity);
+                } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                    throw new RuntimeException(e);
+                }
+
+                TTL = (int) Duration.between(startTime, endTime).getSeconds();
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown collection: " + collectionName);
+        }
         databaseApi.addEntity(entity, collectionName);
         try {
             ObjectId id = (ObjectId) entity.getClass().getMethod("getId").invoke(entity);
@@ -29,7 +53,7 @@ public class CacheManager implements CRUDManager {
             System.out.println(collectionName+":"+id.toHexString());
             System.out.println(collectionName+":"+id.toString().replaceFirst("^0+(?!$)", ""));
 
-            redisManager.setDocument(collectionName+":"+id.toString().replaceFirst("^0+(?!$)", ""), document);
+            redisManager.setDocument(collectionName+":"+id.toString().replaceFirst("^0+(?!$)", ""), document, TTL);
         } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             throw new RuntimeException(e);
         }
@@ -49,6 +73,30 @@ public class CacheManager implements CRUDManager {
 
     @Override
     public <T> void updateEntity(T entity, String collectionName, ObjectId id) {
+        int TTL;
+        switch (collectionName) {
+            case "clients":
+                TTL = 1800;
+                break;
+            case "vehicles":
+                TTL = 1800;
+                break;
+            case "rents":
+                LocalDateTime startTime;
+                LocalDateTime endTime;
+                try {
+                    startTime = (LocalDateTime) entity.getClass().getMethod("getStartDate").invoke(entity);
+                    endTime = (LocalDateTime) entity.getClass().getMethod("getEndDate").invoke(entity);
+                } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                    throw new RuntimeException(e);
+                }
+
+                TTL = (int) Duration.between(startTime, endTime).getSeconds();
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown collection: " + collectionName);
+        }
+
         databaseApi.updateEntity(entity, collectionName, id);
 
         try {
@@ -67,7 +115,7 @@ public class CacheManager implements CRUDManager {
                 currentClass = currentClass.getSuperclass();
             }
 
-            redisManager.setDocument(collectionName+":"+id.toString().replaceFirst("^0+(?!$)", ""), document);
+            redisManager.setDocument(collectionName+":"+id.toString().replaceFirst("^0+(?!$)", ""), document, TTL);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -76,9 +124,12 @@ public class CacheManager implements CRUDManager {
     @Override
     public <T> T getEntity(Class<T> entityClass, String collectionName, ObjectId id) {
         Document document = null;
+        int TTL;
+
         try {
             document = redisManager.getDocument(collectionName+":"+id.toString().replaceFirst("^0+(?!$)", ""));
         } catch (Exception e) {
+            System.out.println("Problemy z połączeniem z usługą Redis.");
             return databaseApi.getEntity(entityClass, collectionName, id);
         }
 
@@ -97,11 +148,80 @@ public class CacheManager implements CRUDManager {
                     currentClass = currentClass.getSuperclass();
                 }
 
+                switch (collectionName) {
+                    case "clients":
+                        TTL = 1800;
+                        break;
+                    case "vehicles":
+                        TTL = 1800;
+                        break;
+                    case "rents":
+                        LocalDateTime startTime;
+                        LocalDateTime endTime;
+                        try {
+                            startTime = (LocalDateTime) entity.getClass().getMethod("getStartDate").invoke(entity);
+                            endTime = (LocalDateTime) entity.getClass().getMethod("getEndDate").invoke(entity);
+                        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                            throw new RuntimeException(e);
+                        }
+
+                        TTL = (int) Duration.between(startTime, endTime).getSeconds();
+                        break;
+                    default:
+                        throw new IllegalArgumentException("Unknown collection: " + collectionName);
+                }
+
+                redisManager.setDocument(collectionName+":"+id.toString().replaceFirst("^0+(?!$)", ""), document, TTL);
+
                 return entity;
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
                 throw new RuntimeException(e);
             }
+        } else {
+            T entity = databaseApi.getEntity(entityClass, collectionName, id);;
+            
+            switch (collectionName) {
+                case "clients":
+                    TTL = 1800;
+                    break;
+                case "vehicles":
+                    TTL = 1800;
+                    break;
+                case "rents":
+                    LocalDateTime startTime;
+                    LocalDateTime endTime;
+                    try {
+                        startTime = (LocalDateTime) entity.getClass().getMethod("getStartDate").invoke(entity);
+                        endTime = (LocalDateTime) entity.getClass().getMethod("getEndDate").invoke(entity);
+                    } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                        throw new RuntimeException(e);
+                    }
+
+                    TTL = (int) Duration.between(startTime, endTime).getSeconds();
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unknown collection: " + collectionName);
+            }
+
+
+            try {
+                document = new Document();
+                Class<?> currentClass = entity.getClass();
+
+                while (currentClass != null) {
+                    for (java.lang.reflect.Field field : currentClass.getDeclaredFields()) {
+                        field.setAccessible(true);
+                        document.append(field.getName(), field.get(entity));
+                    }
+                    currentClass = currentClass.getSuperclass();
+                }
+
+                redisManager.setDocument(collectionName+":"+id.toString().replaceFirst("^0+(?!$)", ""), document, TTL);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+
+            return entity;
         }
-        return databaseApi.getEntity(entityClass, collectionName, id);
     }
 }

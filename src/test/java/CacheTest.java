@@ -20,7 +20,11 @@ public class CacheTest {
 
         RedisManager redisManager = new RedisManager();
         System.out.println(redisManager.getDocument("vehicles:"+car.getId().toString().replaceFirst("^0+(?!$)", "")));
+        redisManager.removeDocument("vehicles:"+car.getId().toString().replaceFirst("^0+(?!$)", ""));
         ///todo dodać kolejny test, a w nim asercje na zapisywanie i pobieranie tylko z cache, żeby można było sprawdzić działanie czysto cache'a
+
+        Car loadedCar2 = cacheManager.getEntity(Car.class, "vehicles", car.getId());
+        System.out.println(redisManager.getDocument("vehicles:"+car.getId().toString().replaceFirst("^0+(?!$)", "")));
 
         assertEquals(car.getClass(), loadedCar.getClass());
         assertNotNull(loadedCar);
