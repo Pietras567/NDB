@@ -178,8 +178,11 @@ public class CacheManager implements CRUDManager {
                 throw new RuntimeException(e);
             }
         } else {
-            T entity = databaseApi.getEntity(entityClass, collectionName, id);;
-            
+            T entity = databaseApi.getEntity(entityClass, collectionName, id);
+            if (entity == null) {
+                return null;
+            }
+
             switch (collectionName) {
                 case "clients":
                     TTL = 1800;
