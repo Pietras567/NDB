@@ -5,13 +5,14 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import javax.print.Doc;
 import java.lang.reflect.InvocationTargetException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class CacheTest {
     CacheManager cacheManager = new CacheManager();
-    DatabaseApi databaseApi = new DatabaseApi();
+    RedisManager redisManager = new RedisManager();
     @BeforeEach
     void setUp() {
 
@@ -76,8 +77,17 @@ public class CacheTest {
     }
 
     @Test
-    void ttlReadCacheManagerTest() {
+    void ttlReadCacheManagerTest() throws InterruptedException {
         Car car = new Car("Honda Civic", 1400, 120, 4);
+        cacheManager.addEntity(car, "vehicles");
+        redisManager.changeTTL("vehicles:"+car.getId().toString().replaceFirst("^0+(?!$)", "")
+                , 1);
+        System.out.println("Przed przerwa");
+        Thread.sleep(10000);
+        System.out.println("Po przerwie");
+        Document doc = redisManager.getDocument("vehicles:"+car.getId().toString().replaceFirst("^0+(?!$)", ""));
+
+        assertNull(doc);
     }
 
 }

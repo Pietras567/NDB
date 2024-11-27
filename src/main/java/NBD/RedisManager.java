@@ -52,4 +52,8 @@ public class RedisManager {
     public void removeDocument(String key) {
         pool.del(key);
     }
+
+    public long changeTTL(String key, int TTL) {
+        return pool.expire(key, TTL);
+    }
 }
