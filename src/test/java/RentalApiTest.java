@@ -20,8 +20,8 @@ public class RentalApiTest {
         LocalDateTime start = LocalDateTime.now();
         LocalDateTime end = start.plusDays(1);
         Rent rent = new Rent(client.getId(), car.getId(),start,end);
-        rent.setClient(client);
-        rent.setVehicle(car);
+        //rent.setClient(client);
+        //rent.setVehicle(car);
 
         databaseApi.addEntity(rent);
         List<Rent> temp = rentalApi.getAllEntities(Rent.class);
