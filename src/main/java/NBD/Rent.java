@@ -1,18 +1,28 @@
 package NBD;
 
-import jakarta.persistence.*;
+import com.datastax.driver.mapping.annotations.Column;
+import com.datastax.oss.driver.api.mapper.annotations.Entity;
+import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
+import com.datastax.oss.driver.api.mapper.annotations.ClusteringColumn;
 import java.time.LocalDateTime;
 
 @Entity
 public class Rent {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @PartitionKey
     private long id;
-    @Column(name = "client_id", insertable = false, updatable = false)
+
+    @Column(name = "clientId")
     private long client_id;
-    @Column(name = "vehicle_id", insertable = false, updatable = false)
+
+    @Column(name = "vehicleId")
     private long vehicle_id;
+
+    @ClusteringColumn
+    @Column(name = "startDate")
     private LocalDateTime startDate;
+
+    @ClusteringColumn
+    @Column(name = "endDate")
     private LocalDateTime endDate;
 
     public Rent(long client_id, long vehicle_id, LocalDateTime startDate, LocalDateTime endDate) {
@@ -21,14 +31,6 @@ public class Rent {
         this.startDate = startDate;
         this.endDate = endDate;
     }
-
-    @ManyToOne
-    @JoinColumn(name = "client_id", nullable = false)
-    private Client client;
-
-    @ManyToOne
-    @JoinColumn(name = "vehicle_id", nullable = false)
-    private Vehicle vehicle;
 
     public Rent() {
 
@@ -83,18 +85,10 @@ public class Rent {
     }
 
     public Vehicle getVehicle() {
-        return vehicle;
-    }
-
-    public void setVehicle(Vehicle vehicle) {
-        this.vehicle = vehicle;
+        return null; ///todo pobieranie z bazy
     }
 
     public Client getClient() {
-        return client;
-    }
-
-    public void setClient(Client client) {
-        this.client = client;
+        return null; ///todo pobieranie z bazy
     }
 }

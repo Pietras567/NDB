@@ -14,7 +14,8 @@ public class RentalApi {
             long vehicleId = vehicle.getId();
             System.out.println(vehicleId);
             EntityManager entityManager = entityManagerFactory.createEntityManager();
-            String jpql = "SELECT r FROM Rent r WHERE r.vehicle_id = :vehicleId";
+            //String jpql = "SELECT r FROM Rent r WHERE r.vehicle_id = :vehicleId";
+            String jpql = null;
             TypedQuery<Rent> query = entityManager.createQuery(jpql, Rent.class);
             query.setParameter("vehicleId", vehicleId);
 
@@ -58,7 +59,8 @@ public class RentalApi {
             long vehicleId = vehicle.getId();
             System.out.println(vehicleId);
             EntityManager entityManager = entityManagerFactory.createEntityManager();
-            String jpql = "SELECT r FROM Rent r WHERE r.vehicle_id = :vehicleId";
+            //String jpql = "SELECT r FROM Rent r WHERE r.vehicle_id = :vehicleId";
+            String jpql = null;
             TypedQuery<Rent> query = entityManager.createQuery(jpql, Rent.class);
             query.setParameter("vehicleId", vehicleId);
 
@@ -77,8 +79,8 @@ public class RentalApi {
                 System.out.println("jadymy");
                 DatabaseApi Api = new DatabaseApi();
                 Rent rent = new Rent(client.getId(), vehicle.getId(), LocalDateTime.now(), LocalDateTime.now().plusDays(days));
-                rent.setClient(client);
-                rent.setVehicle(vehicle);
+                //rent.setClient(client);
+                //rent.setVehicle(vehicle);
                 Api.addEntity(rent);
             } else {
                 return false;

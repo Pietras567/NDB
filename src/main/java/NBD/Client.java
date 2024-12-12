@@ -1,20 +1,20 @@
 package NBD;
 
-import jakarta.persistence.*;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.datastax.driver.mapping.annotations.Column;
+import com.datastax.oss.driver.api.mapper.annotations.Entity;
+import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
 
 @Entity
 public class Client {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @PartitionKey
+    @Column(name = "clientId")
     private long id;
-    private String name;
-    private int age;
 
-    @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Rent> rents = new ArrayList<>();
+    @Column(name = "name")
+    private String name;
+
+    @Column(name = "age")
+    private int age;
 
     public Client(String name, int age) {
         this.name = name;
@@ -44,21 +44,12 @@ public class Client {
         this.age = age;
     }
 
-    public List<Rent> getRents() {
-        return rents;
-    }
-
-    public void setRents(List<Rent> rents) {
-        this.rents = rents;
-    }
-
     @Override
     public String toString() {
         return "Client{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", age=" + age +
-                ", rents=" + rents +
                 '}';
     }
 }
