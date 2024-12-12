@@ -39,7 +39,7 @@ services:
       CASSANDRA_USER: carRental
       CASSANDRA_PASSWORD: carRentalPassword
       MAX_HEAP_SIZE: 2G
-      HEAP_NEW_SIZE: 200M
+      HEAP_NEWSIZE: 200M
 
   cassandra2:
     image: cassandra:latest

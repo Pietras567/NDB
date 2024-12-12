@@ -1,20 +1,34 @@
 package NBD;
 
+import com.datastax.oss.driver.api.core.CqlSession;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
 
+import java.net.InetSocketAddress;
+
 public class DatabaseApi implements CRUDManager {
-    private final Object lock = new Object();
+
+    private static CqlSession session;
+
+    public void initSession() {
+        session = CqlSession.builder()
+                .addContactPoint(new InetSocketAddress("cassandra1", 9042))
+                .addContactPoint(new InetSocketAddress("cassandra2", 9043))
+                .addContactPoint(new InetSocketAddress("cassandra3", 9044))
+                .withLocalDatacenter("DC1")
+                .withAuthCredentials("carRental", "carRentalPassword")
+                .build();
+    }
+
+
+
 
     private static EntityManagerFactory entityManagerFactory;
 
-    private static void init() {
-        entityManagerFactory = Persistence.createEntityManagerFactory("default");
-    }
-
     public DatabaseApi() {
-        init();
+        initSession();
+        System.out.println("Database connection established.");
     }
     @Override
     public <T> void addEntity(T entity) {
