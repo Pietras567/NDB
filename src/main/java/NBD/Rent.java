@@ -93,4 +93,8 @@ public class Rent {
     public Client getClient() {
         return null; ///todo pobieranie z bazy
     }
+
+    public void setId(UUID id) {
+        this.id = id;
+    }
 }

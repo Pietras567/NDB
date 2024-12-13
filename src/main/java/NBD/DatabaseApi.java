@@ -13,8 +13,7 @@ import jakarta.persistence.Persistence;
 import java.net.InetSocketAddress;
 import java.util.UUID;
 
-//public class DatabaseApi implements CRUDManager {
-public class DatabaseApi {
+public class DatabaseApi implements CRUDManager {
     private static CqlSession session;
 
     public void initSession() {
@@ -107,20 +106,15 @@ public class DatabaseApi {
             System.out.println("Test1");
             ClientMapper mapper = new ClientMapperBuilder(session).withDefaultKeyspace("car_rental").build();
             System.out.println("Test2 " + mapper.toString());
-            ClientDao clientDao = mapper.clientDao(); //zawiesza się tutaj
+            ClientDao clientDao = mapper.clientDao();
 
             Client client = new Client("John Doe", 30);
             System.out.println(client);
 
-            //if (client.getId() == null) {
-            //    System.out.println("client_id is null, generating UUID");
-            //    client.setId(UUID.randomUUID());
-            //    System.out.println("New id: " + client.getId());
-            //}
-
             System.out.println("Test CRUD");
 
-            clientDao.insert(client);
+            addEntity(client, "clients");
+            //clientDao.insert(client);
             System.out.println("Saved: " + client);
 
             Client fetchedClient = clientDao.findById(client.getId());
@@ -146,67 +140,81 @@ public class DatabaseApi {
     }
 
 
-//    @Override
-//    public <T> void addEntity(T entity) {
-//        EntityManager em = entityManagerFactory.createEntityManager();
-//        try {  // ATOMICITY
-//            em.getTransaction().begin();
-//            em.persist(entity);
-//            em.getTransaction().commit();
-//            em.close();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            em.getTransaction().rollback();
-//        } finally {
-//            em.close();
-//        }
-//    }
-//    @Override
-//    public <T> void deleteEntity(Class<T> entityClass, long id) { // JAKO PARAMETR PODAJEMY np. Vehicle.class
-//        EntityManager em = entityManagerFactory.createEntityManager();
-//        try {
-//            em.getTransaction().begin();
-//            T entity = em.find(entityClass, id);
-//            em.remove(entity);
-//            em.getTransaction().commit();
-//            em.close();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            em.getTransaction().rollback();
-//        } finally {
-//            em.close();
-//        }
-//    }
-//    @Override
-//    public <T> void updateEntity(T entity) {
-//        EntityManager em = entityManagerFactory.createEntityManager();
-//        try {
-//            em.getTransaction().begin();
-//            em.merge(entity);
-//            em.getTransaction().commit();
-//            em.close();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            em.getTransaction().rollback();
-//        } finally {
-//            em.close();
-//        }
-//    }
-//    @Override
-//    public <T> T getEntity(Class<T> entityClass, long id) {
-//        EntityManager em = entityManagerFactory.createEntityManager();
-//        T entity = null;
-//        try {
-//            em.getTransaction().begin();
-//            entity = em.find(entityClass, id);
-//            em.getTransaction().commit();
-//            em.close();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            em.getTransaction().rollback();
-//        } finally {
-//            em.close();
-//        }
-//        return entity;
-//    }
+    @Override
+    public <T> void addEntity(T entity, String tableName) {
+        try {
+            switch (tableName) {
+                case "clients":
+                    ClientMapper clientMapper = new ClientMapperBuilder(session).withDefaultKeyspace("car_rental").build();
+                    ClientDao clientDao = clientMapper.clientDao();
+
+                    if ((UUID) entity.getClass().getMethod("getId").invoke(entity) == null) {
+                        System.out.println("client_id is null, generating UUID");
+                        UUID uuid = UUID.randomUUID();
+                        entity.getClass().getMethod("setId", UUID.class).invoke(entity, uuid);
+                        System.out.println("New id: " + uuid);
+                    }
+
+                    clientDao.insert((Client) entity);
+                    break;
+                case "rents":
+                    RentMapper rentMapper = new RentMapperBuilder(session).withDefaultKeyspace("car_rental").build();
+                    RentDao rentDao = rentMapper.rentDao();
+
+                    if ((UUID) entity.getClass().getMethod("getId").invoke(entity) == null) {
+                        System.out.println("rent_id is null, generating UUID");
+                        UUID uuid = UUID.randomUUID();
+                        entity.getClass().getMethod("setId", UUID.class).invoke(entity, uuid);
+                        System.out.println("New id: " + uuid);
+                    }
+
+                    rentDao.insert((Rent) entity);
+                    break;
+                case "vehicles":
+                    break;
+                default:
+                    throw new RuntimeException("Unsupported table name: " + tableName);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Problem z zapisem danych.");
+        } finally {
+            System.out.println("Dane zostaly zapisane.");
+        }
+    }
+    @Override
+    public <T> void deleteEntity(Class<T> entityClass, String tableName, UUID id) { // JAKO PARAMETR PODAJEMY np. Vehicle.class
+        try {
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Problem z usunieciem danych");
+        } finally {
+
+        }
+    }
+    @Override
+    public <T> void updateEntity(T entity, String tableName) {
+        try {
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Problem z aktualizacja danych");
+        } finally {
+
+        }
+    }
+    @Override
+    public <T> T getEntity(Class<T> entityClass, String tableName, UUID id) {
+        T entity = null;
+        try {
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Problem z pobraniem danych");
+        } finally {
+
+        }
+        return entity;
+    }
 }

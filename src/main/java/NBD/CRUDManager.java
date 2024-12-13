@@ -1,8 +1,10 @@
 package NBD;
 
+import java.util.UUID;
+
 public interface CRUDManager {
-    <T> void addEntity(T entity);
-    <T> void deleteEntity(Class<T> entityClass, long id);
-    <T> void updateEntity(T entity);
-    <T> T getEntity(Class<T> entityClass, long id);
+    <T> void addEntity(T entity, String tableName);
+    <T> void deleteEntity(Class<T> entityClass, String tableName, UUID id);
+    <T> void updateEntity(T entity, String tableName);
+    <T> T getEntity(Class<T> entityClass, String tableName, UUID id);
 }
