@@ -1,21 +1,16 @@
 package NBD;
-import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
-@Entity
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(name = "vehicle_type", discriminatorType = DiscriminatorType.STRING)
 public abstract class Vehicle {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long Id;
+    private UUID Id;
     private String Name;
     private int Weight;
     private int Power;
 
-    @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Rent> rents = new ArrayList<>();
+    //@OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL, orphanRemoval = true)
+    //private List<Rent> rents = new ArrayList<>();
 
     public Vehicle() {
 
@@ -38,7 +33,7 @@ public abstract class Vehicle {
         Weight = weight;
     }
 
-    public long getId() {
+    public UUID getId() {
         return Id;
     }
 
@@ -56,13 +51,13 @@ public abstract class Vehicle {
         Power = power;
     }
 
-    public List<Rent> getRents() {
-        return rents;
-    }
+    //public List<Rent> getRents() {
+    //    return rents;
+    //}
 
-    public void setRents(List<Rent> rents) {
-        this.rents = rents;
-    }
+    //public void setRents(List<Rent> rents) {
+    //    this.rents = rents;
+    //}
 
     @Override
     public String toString() {

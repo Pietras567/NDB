@@ -1,31 +1,34 @@
 package NBD;
 
-import com.datastax.driver.mapping.annotations.Column;
+import com.datastax.oss.driver.api.mapper.annotations.CqlName;
 import com.datastax.oss.driver.api.mapper.annotations.Entity;
 import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
 import com.datastax.oss.driver.api.mapper.annotations.ClusteringColumn;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
+@CqlName("rents")
 public class Rent {
     @PartitionKey
-    private long id;
+    @CqlName("rentId")
+    private UUID id;
 
-    @Column(name = "clientId")
-    private long client_id;
+    @CqlName("clientId")
+    private UUID client_id;
 
-    @Column(name = "vehicleId")
-    private long vehicle_id;
+    @CqlName("vehicleId")
+    private UUID vehicle_id;
 
-    @ClusteringColumn
-    @Column(name = "startDate")
+    @ClusteringColumn(0)
+    @CqlName("startDate")
     private LocalDateTime startDate;
 
-    @ClusteringColumn
-    @Column(name = "endDate")
+    @ClusteringColumn(1)
+    @CqlName("endDate")
     private LocalDateTime endDate;
 
-    public Rent(long client_id, long vehicle_id, LocalDateTime startDate, LocalDateTime endDate) {
+    public Rent(UUID client_id, UUID vehicle_id, LocalDateTime startDate, LocalDateTime endDate) {
         this.client_id = client_id;
         this.vehicle_id = vehicle_id;
         this.startDate = startDate;
@@ -47,24 +50,23 @@ public class Rent {
                 '}';
     }
 
-    public long getId() {
+    public UUID getId() {
         return id;
     }
 
-
-    public long getClient_id() {
+    public UUID getClient_id() {
         return client_id;
     }
 
-    public void setClient_id(long client_id) {
+    public void setClient_id(UUID client_id) {
         this.client_id = client_id;
     }
 
-    public long getVehicle_id() {
+    public UUID getVehicle_id() {
         return vehicle_id;
     }
 
-    public void setVehicle_id(long vehicle_id) {
+    public void setVehicle_id(UUID vehicle_id) {
         this.vehicle_id = vehicle_id;
     }
 

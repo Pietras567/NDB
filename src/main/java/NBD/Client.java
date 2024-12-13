@@ -1,19 +1,22 @@
 package NBD;
 
-import com.datastax.driver.mapping.annotations.Column;
 import com.datastax.oss.driver.api.mapper.annotations.Entity;
 import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
+import com.datastax.oss.driver.api.mapper.annotations.CqlName;
+
+import java.util.UUID;
 
 @Entity
+@CqlName("clients")
 public class Client {
     @PartitionKey
-    @Column(name = "clientId")
-    private long id;
+    @CqlName("clientId")
+    private UUID id;
 
-    @Column(name = "name")
+    @CqlName("name")
     private String name;
 
-    @Column(name = "age")
+    @CqlName("age")
     private int age;
 
     public Client(String name, int age) {
@@ -21,10 +24,16 @@ public class Client {
         this.age = age;
     }
 
+    public Client(UUID id, String name, int age) {
+        this.id = id;
+        this.name = name;
+        this.age = age;
+    }
+
     public Client() {}
 
 
-    public long getId() {
+    public UUID getId() {
         return id;
     }
 

@@ -31,6 +31,7 @@ dependencies {
     implementation 'com.datastax.oss:java-driver-query-builder:4.17.0'
     implementation 'com.datastax.oss:java-driver-mapper-processor:4.17.0'
     implementation 'com.datastax.oss:java-driver-mapper-runtime:4.17.0'
+    annotationProcessor "com.datastax.oss:java-driver-mapper-processor:4.17.0"
 }
 
 test {

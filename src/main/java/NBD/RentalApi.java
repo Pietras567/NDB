@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 
 public class RentalApi {
@@ -11,7 +12,7 @@ public class RentalApi {
 
     public boolean oddaj(Vehicle vehicle, Client client) {
         try {
-            long vehicleId = vehicle.getId();
+            UUID vehicleId = vehicle.getId();
             System.out.println(vehicleId);
             EntityManager entityManager = entityManagerFactory.createEntityManager();
             //String jpql = "SELECT r FROM Rent r WHERE r.vehicle_id = :vehicleId";
@@ -56,7 +57,7 @@ public class RentalApi {
 
     public boolean wypozycz(Vehicle vehicle, Client client, int days) {
         try {
-            long vehicleId = vehicle.getId();
+            UUID vehicleId = vehicle.getId();
             System.out.println(vehicleId);
             EntityManager entityManager = entityManagerFactory.createEntityManager();
             //String jpql = "SELECT r FROM Rent r WHERE r.vehicle_id = :vehicleId";

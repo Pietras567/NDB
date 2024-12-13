@@ -11,6 +11,7 @@ import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
 
 import java.net.InetSocketAddress;
+import java.util.UUID;
 
 public class DatabaseApi implements CRUDManager {
 
@@ -26,6 +27,26 @@ public class DatabaseApi implements CRUDManager {
                 .build();
     }
 
+    public void test() {
+        try {
+            ClientMapper mapper = new ClientMapperBuilder(session).build();
+            ClientDao clientDao = mapper.clientDao();
+
+            Client client = new Client(UUID.randomUUID(), "John Doe", 30);
+            clientDao.insert(client);
+
+            Client fetchedClient = clientDao.findById(client.getId());
+            System.out.println(fetchedClient);
+
+            fetchedClient.setAge(31);
+            clientDao.update(fetchedClient);
+
+            clientDao.delete(fetchedClient);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+    }
 
 
 
@@ -49,17 +70,20 @@ public class DatabaseApi implements CRUDManager {
 
         try { // Creating Tables
             String createTableClients = "CREATE TABLE IF NOT EXISTS carrental.clients (" +
-                    "clientId UUID PRIMARY KEY, " +
+                    "clientId UUID, " +
                     "name VARCHAR, " +
-                    "age INT);";
+                    "age INT, " +
+                    "PRIMARY KEY (clientId));";
             session.execute(createTableClients);
 
             String createTableRents = "CREATE TABLE IF NOT EXISTS carrental.rents (" +
-                    "rentId UUID PRIMARY KEY, " +
+                    "rentId UUID, " +
                     "clientId UUID, " +
                     "vehicleId UUID, " +
                     "startDate TIMESTAMP, " +
-                    "endDate TIMESTAMP);";
+                    "endDate TIMESTAMP, " +
+                    "PRIMARY KEY (rentId, startDate, endDate)) " +
+                    "WITH CLUSTERING ORDER BY (startDate DESC, endDate DESC);";
             session.execute(createTableRents);
 
             ///todo utworzenie tabeli dla pojazdów
@@ -93,6 +117,9 @@ public class DatabaseApi implements CRUDManager {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        session.execute("USE carrental");
+        test();
     }
 
 
