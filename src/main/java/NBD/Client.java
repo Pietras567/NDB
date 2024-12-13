@@ -27,12 +27,6 @@ public class Client {
         this.age = age;
     }
 
-    public Client(UUID id, String name, int age) {
-        this.id = id;
-        this.name = name;
-        this.age = age;
-    }
-
     public Client() {}
 
 

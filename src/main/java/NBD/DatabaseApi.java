@@ -48,6 +48,12 @@ public class DatabaseApi {
             Client client = new Client("John Doe", 30);
             System.out.println(client);
 
+            //if (client.getId() == null) {
+            //    System.out.println("client_id is null, generating UUID");
+            //    client.setId(UUID.randomUUID());
+            //    System.out.println("New id: " + client.getId());
+            //}
+
             System.out.println("Test CRUD");
 
             clientDao.insert(client);
@@ -91,7 +97,7 @@ public class DatabaseApi {
         try { // Creating Tables
             String createTableClients = "CREATE TABLE IF NOT EXISTS car_rental.clients (" +
                     "client_id UUID, " +
-                    "name VARCHAR, " +
+                    "name TEXT, " +
                     "age INT, " +
                     "PRIMARY KEY (client_id, name)) " +
                     "WITH CLUSTERING ORDER BY (name ASC);";
