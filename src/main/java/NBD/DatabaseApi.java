@@ -25,62 +25,7 @@ public class DatabaseApi {
                 .withLocalDatacenter("DC1")
                 .withAuthCredentials("carRental", "carRentalPassword")
                 .build();
-    }
 
-    public void test() {
-        try {
-            session.execute("USE car_rental");
-
-
-            Client client_manual = new Client("John Doe", 30);
-            System.out.println(client_manual);
-
-            //ręczne dodawanie działa
-            session.execute(
-                    "INSERT INTO clients (client_id, name, age) VALUES (?, ?, ?)",
-                    client_manual.getId(), client_manual.getName(), client_manual.getAge());
-
-            System.out.println("Test1");
-            ClientMapper mapper = new ClientMapperBuilder(session).withDefaultKeyspace("car_rental").build();
-            System.out.println("Test2 " + mapper.toString());
-            ClientDao clientDao = mapper.clientDao(); //zawiesza się tutaj
-
-            Client client = new Client("John Doe", 30);
-            System.out.println(client);
-
-            //if (client.getId() == null) {
-            //    System.out.println("client_id is null, generating UUID");
-            //    client.setId(UUID.randomUUID());
-            //    System.out.println("New id: " + client.getId());
-            //}
-
-            System.out.println("Test CRUD");
-
-            clientDao.insert(client);
-            System.out.println("Saved: " + client);
-
-            Client fetchedClient = clientDao.findById(client.getId());
-            System.out.println(fetchedClient);
-
-            fetchedClient.setAge(31);
-            clientDao.update(fetchedClient);
-            System.out.println("Updated: " + fetchedClient);
-
-            clientDao.delete(fetchedClient);
-            System.out.println("Deleted: " + fetchedClient);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
-    }
-
-
-
-    private static EntityManagerFactory entityManagerFactory;
-
-    public DatabaseApi() {
-        initSession();
-        System.out.println("Database connection established.");
         System.out.println(session.getMetadata().getKeyspaces());
 
         try { // Creating Keyspaces
@@ -144,7 +89,59 @@ public class DatabaseApi {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
 
+    public void test() {
+        try {
+            session.execute("USE car_rental");
+
+
+            Client client_manual = new Client("John Doe", 30);
+            System.out.println(client_manual);
+
+            //ręczne dodawanie działa
+            session.execute(
+                    "INSERT INTO clients (client_id, name, age) VALUES (?, ?, ?)",
+                    client_manual.getId(), client_manual.getName(), client_manual.getAge());
+
+            System.out.println("Test1");
+            ClientMapper mapper = new ClientMapperBuilder(session).withDefaultKeyspace("car_rental").build();
+            System.out.println("Test2 " + mapper.toString());
+            ClientDao clientDao = mapper.clientDao(); //zawiesza się tutaj
+
+            Client client = new Client("John Doe", 30);
+            System.out.println(client);
+
+            //if (client.getId() == null) {
+            //    System.out.println("client_id is null, generating UUID");
+            //    client.setId(UUID.randomUUID());
+            //    System.out.println("New id: " + client.getId());
+            //}
+
+            System.out.println("Test CRUD");
+
+            clientDao.insert(client);
+            System.out.println("Saved: " + client);
+
+            Client fetchedClient = clientDao.findById(client.getId());
+            System.out.println(fetchedClient);
+
+            fetchedClient.setAge(31);
+            clientDao.update(fetchedClient);
+            System.out.println("Updated: " + fetchedClient);
+
+            clientDao.delete(fetchedClient);
+            System.out.println("Deleted: " + fetchedClient);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    public DatabaseApi() {
+        initSession();
+        System.out.println("Database connection established.");
+        
         this.test();
     }
 

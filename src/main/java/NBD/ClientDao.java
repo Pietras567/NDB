@@ -18,7 +18,7 @@ public interface ClientDao {
     @Select
     List<Client> findAll();
 
-    @Query("SELECT * FROM clients WHERE (client_id = :client_id) ALLOW FILTERING")
+    @Query("SELECT * FROM clients WHERE client_id = :client_id")
     Client findById(UUID client_id);
 
     @Update

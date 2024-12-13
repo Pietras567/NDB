@@ -58,4 +58,8 @@ public class Client {
                 ", age=" + age +
                 '}';
     }
+
+    public void setId(UUID id) {
+        this.id = id;
+    }
 }
