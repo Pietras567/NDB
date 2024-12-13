@@ -1,5 +1,6 @@
 package NBD;
 
+import com.datastax.oss.driver.api.mapper.annotations.ClusteringColumn;
 import com.datastax.oss.driver.api.mapper.annotations.Entity;
 import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
 import com.datastax.oss.driver.api.mapper.annotations.CqlName;
@@ -10,9 +11,10 @@ import java.util.UUID;
 @CqlName("clients")
 public class Client {
     @PartitionKey
-    @CqlName("clientId")
+    @CqlName("client_id")
     private UUID id;
 
+    @ClusteringColumn(0)
     @CqlName("name")
     private String name;
 
@@ -20,6 +22,7 @@ public class Client {
     private int age;
 
     public Client(String name, int age) {
+        this.id = UUID.randomUUID();
         this.name = name;
         this.age = age;
     }

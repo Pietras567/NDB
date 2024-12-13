@@ -11,21 +11,21 @@ import java.util.UUID;
 @CqlName("rents")
 public class Rent {
     @PartitionKey
-    @CqlName("rentId")
+    @CqlName("rent_id")
     private UUID id;
 
-    @CqlName("clientId")
+    @CqlName("client_id")
     private UUID client_id;
 
-    @CqlName("vehicleId")
+    @CqlName("vehicle_id")
     private UUID vehicle_id;
 
     @ClusteringColumn(0)
-    @CqlName("startDate")
+    @CqlName("start_date")
     private LocalDateTime startDate;
 
     @ClusteringColumn(1)
-    @CqlName("endDate")
+    @CqlName("end_date")
     private LocalDateTime endDate;
 
     public Rent(UUID client_id, UUID vehicle_id, LocalDateTime startDate, LocalDateTime endDate) {

@@ -4,6 +4,8 @@ import com.datastax.oss.driver.api.mapper.annotations.Dao;
 import com.datastax.oss.driver.api.mapper.annotations.Delete;
 import com.datastax.oss.driver.api.mapper.annotations.Insert;
 import com.datastax.oss.driver.api.mapper.annotations.Select;
+import com.datastax.oss.driver.api.mapper.annotations.Query;
+import com.datastax.oss.driver.api.mapper.annotations.Update;
 
 import java.util.List;
 import java.util.UUID;
@@ -16,10 +18,10 @@ public interface ClientDao {
     @Select
     List<Client> findAll();
 
-    @Select
-    Client findById(UUID id);
+    @Query("SELECT * FROM rents WHERE client_id = :client_id")
+    Client findById(UUID client_id);
 
-    @Insert
+    @Update
     void update(Client client);
 
     @Delete

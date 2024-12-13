@@ -13,8 +13,8 @@ import jakarta.persistence.Persistence;
 import java.net.InetSocketAddress;
 import java.util.UUID;
 
-public class DatabaseApi implements CRUDManager {
-
+//public class DatabaseApi implements CRUDManager {
+public class DatabaseApi {
     private static CqlSession session;
 
     public void initSession() {
@@ -29,19 +29,39 @@ public class DatabaseApi implements CRUDManager {
 
     public void test() {
         try {
-            ClientMapper mapper = new ClientMapperBuilder(session).build();
-            ClientDao clientDao = mapper.clientDao();
+            session.execute("USE car_rental");
 
-            Client client = new Client(UUID.randomUUID(), "John Doe", 30);
+
+            Client client_manual = new Client("John Doe", 30);
+            System.out.println(client_manual);
+
+            //ręczne dodawanie działa
+            session.execute(
+                    "INSERT INTO clients (client_id, name, age) VALUES (?, ?, ?)",
+                    client_manual.getId(), client_manual.getName(), client_manual.getAge());
+
+            System.out.println("Test1");
+            ClientMapper mapper = new ClientMapperBuilder(session).withDefaultKeyspace("car_rental").build();
+            System.out.println("Test2 " + mapper.toString());
+            ClientDao clientDao = mapper.clientDao(); //zawiesza się tutaj
+
+            Client client = new Client("John Doe", 30);
+            System.out.println(client);
+
+            System.out.println("Test CRUD");
+
             clientDao.insert(client);
+            System.out.println("Saved: " + client);
 
             Client fetchedClient = clientDao.findById(client.getId());
             System.out.println(fetchedClient);
 
             fetchedClient.setAge(31);
             clientDao.update(fetchedClient);
+            System.out.println("Updated: " + fetchedClient);
 
             clientDao.delete(fetchedClient);
+            System.out.println("Deleted: " + fetchedClient);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -58,7 +78,7 @@ public class DatabaseApi implements CRUDManager {
         System.out.println(session.getMetadata().getKeyspaces());
 
         try { // Creating Keyspaces
-            String createKeyspace = "CREATE KEYSPACE IF NOT EXISTS carRental " +
+            String createKeyspace = "CREATE KEYSPACE IF NOT EXISTS car_rental " +
                     "WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 3 };";
 
             session.execute(createKeyspace);
@@ -69,21 +89,22 @@ public class DatabaseApi implements CRUDManager {
         }
 
         try { // Creating Tables
-            String createTableClients = "CREATE TABLE IF NOT EXISTS carrental.clients (" +
-                    "clientId UUID, " +
+            String createTableClients = "CREATE TABLE IF NOT EXISTS car_rental.clients (" +
+                    "client_id UUID, " +
                     "name VARCHAR, " +
                     "age INT, " +
-                    "PRIMARY KEY (clientId));";
+                    "PRIMARY KEY (client_id, name)) " +
+                    "WITH CLUSTERING ORDER BY (name ASC);";
             session.execute(createTableClients);
 
-            String createTableRents = "CREATE TABLE IF NOT EXISTS carrental.rents (" +
-                    "rentId UUID, " +
-                    "clientId UUID, " +
-                    "vehicleId UUID, " +
-                    "startDate TIMESTAMP, " +
-                    "endDate TIMESTAMP, " +
-                    "PRIMARY KEY (rentId, startDate, endDate)) " +
-                    "WITH CLUSTERING ORDER BY (startDate DESC, endDate DESC);";
+            String createTableRents = "CREATE TABLE IF NOT EXISTS car_rental.rents (" +
+                    "rent_id UUID, " +
+                    "client_id UUID, " +
+                    "vehicle_id UUID, " +
+                    "start_date TIMESTAMP, " +
+                    "end_date TIMESTAMP, " +
+                    "PRIMARY KEY (rent_id, start_date, end_date)) " +
+                    "WITH CLUSTERING ORDER BY (start_date DESC, end_date DESC);";
             session.execute(createTableRents);
 
             ///todo utworzenie tabeli dla pojazdów
@@ -93,7 +114,7 @@ public class DatabaseApi implements CRUDManager {
         }
 
         try { // Printing Config
-            String keyspaceName = "carrental";
+            String keyspaceName = "car_rental";
             KeyspaceMetadata keyspaceMetadata = session.getMetadata().getKeyspace(keyspaceName).orElse(null);
 
             if (keyspaceMetadata != null) {
@@ -118,72 +139,71 @@ public class DatabaseApi implements CRUDManager {
             e.printStackTrace();
         }
 
-        session.execute("USE carrental");
-        test();
+        this.test();
     }
 
 
-    @Override
-    public <T> void addEntity(T entity) {
-        EntityManager em = entityManagerFactory.createEntityManager();
-        try {  // ATOMICITY
-            em.getTransaction().begin();
-            em.persist(entity);
-            em.getTransaction().commit();
-            em.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-            em.getTransaction().rollback();
-        } finally {
-            em.close();
-        }
-    }
-    @Override
-    public <T> void deleteEntity(Class<T> entityClass, long id) { // JAKO PARAMETR PODAJEMY np. Vehicle.class
-        EntityManager em = entityManagerFactory.createEntityManager();
-        try {
-            em.getTransaction().begin();
-            T entity = em.find(entityClass, id);
-            em.remove(entity);
-            em.getTransaction().commit();
-            em.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-            em.getTransaction().rollback();
-        } finally {
-            em.close();
-        }
-    }
-    @Override
-    public <T> void updateEntity(T entity) {
-        EntityManager em = entityManagerFactory.createEntityManager();
-        try {
-            em.getTransaction().begin();
-            em.merge(entity);
-            em.getTransaction().commit();
-            em.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-            em.getTransaction().rollback();
-        } finally {
-            em.close();
-        }
-    }
-    @Override
-    public <T> T getEntity(Class<T> entityClass, long id) {
-        EntityManager em = entityManagerFactory.createEntityManager();
-        T entity = null;
-        try {
-            em.getTransaction().begin();
-            entity = em.find(entityClass, id);
-            em.getTransaction().commit();
-            em.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-            em.getTransaction().rollback();
-        } finally {
-            em.close();
-        }
-        return entity;
-    }
+//    @Override
+//    public <T> void addEntity(T entity) {
+//        EntityManager em = entityManagerFactory.createEntityManager();
+//        try {  // ATOMICITY
+//            em.getTransaction().begin();
+//            em.persist(entity);
+//            em.getTransaction().commit();
+//            em.close();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            em.getTransaction().rollback();
+//        } finally {
+//            em.close();
+//        }
+//    }
+//    @Override
+//    public <T> void deleteEntity(Class<T> entityClass, long id) { // JAKO PARAMETR PODAJEMY np. Vehicle.class
+//        EntityManager em = entityManagerFactory.createEntityManager();
+//        try {
+//            em.getTransaction().begin();
+//            T entity = em.find(entityClass, id);
+//            em.remove(entity);
+//            em.getTransaction().commit();
+//            em.close();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            em.getTransaction().rollback();
+//        } finally {
+//            em.close();
+//        }
+//    }
+//    @Override
+//    public <T> void updateEntity(T entity) {
+//        EntityManager em = entityManagerFactory.createEntityManager();
+//        try {
+//            em.getTransaction().begin();
+//            em.merge(entity);
+//            em.getTransaction().commit();
+//            em.close();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            em.getTransaction().rollback();
+//        } finally {
+//            em.close();
+//        }
+//    }
+//    @Override
+//    public <T> T getEntity(Class<T> entityClass, long id) {
+//        EntityManager em = entityManagerFactory.createEntityManager();
+//        T entity = null;
+//        try {
+//            em.getTransaction().begin();
+//            entity = em.find(entityClass, id);
+//            em.getTransaction().commit();
+//            em.close();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            em.getTransaction().rollback();
+//        } finally {
+//            em.close();
+//        }
+//        return entity;
+//    }
 }
