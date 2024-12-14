@@ -57,7 +57,32 @@ public class DatabaseApi implements CRUDManager {
                     "WITH CLUSTERING ORDER BY (start_date DESC, end_date DESC);";
             session.execute(createTableRents);
 
-            ///todo utworzenie tabeli dla pojazdów
+            String createTableCars = "CREATE TABLE IF NOT EXISTS car_rental.cars (" +
+                    "vehicle_id UUID, " +
+                    "name TEXT, " +
+                    "weight INT, " +
+                    "power INT, " +
+                    "seats INT, " +
+                    "PRIMARY KEY (vehicle_id))";
+            session.execute(createTableCars);
+
+            String createTableTrucks = "CREATE TABLE IF NOT EXISTS car_rental.trucks (" +
+                    "vehicle_id UUID, " +
+                    "name TEXT, " +
+                    "weight INT, " +
+                    "power INT, " +
+                    "load_capacity INT, " +
+                    "PRIMARY KEY (vehicle_id))";
+            session.execute(createTableTrucks);
+
+            String createTableMotorbike = "CREATE TABLE IF NOT EXISTS car_rental.motorbikes (" +
+                    "vehicle_id UUID, " +
+                    "name TEXT, " +
+                    "weight INT, " +
+                    "power INT, " +
+                    "engine_capacity INT, " +
+                    "PRIMARY KEY (vehicle_id))";
+            session.execute(createTableMotorbike);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -92,40 +117,63 @@ public class DatabaseApi implements CRUDManager {
 
     public void test() {
         try {
-            session.execute("USE car_rental");
-
+            System.out.println("\n\nClient test with manual inserting and client dao");
 
             Client client_manual = new Client("John Doe", 30);
             System.out.println(client_manual);
 
-            //ręczne dodawanie działa
             session.execute(
                     "INSERT INTO clients (client_id, name, age) VALUES (?, ?, ?)",
                     client_manual.getId(), client_manual.getName(), client_manual.getAge());
 
-            System.out.println("Test1");
             ClientMapper mapper = new ClientMapperBuilder(session).withDefaultKeyspace("car_rental").build();
-            System.out.println("Test2 " + mapper.toString());
             ClientDao clientDao = mapper.clientDao();
 
             Client client = new Client("John Doe", 30);
             System.out.println(client);
 
-            System.out.println("Test CRUD");
+            System.out.println("\nTest dao CRUD");
 
-            addEntity(client, "clients");
-            //clientDao.insert(client);
-            System.out.println("Saved: " + client);
+            clientDao.insert(client);
+            System.out.println("\nSaved: " + client);
 
             Client fetchedClient = clientDao.findById(client.getId());
-            System.out.println(fetchedClient);
+            System.out.println("\nFetched: " + fetchedClient);
 
             fetchedClient.setAge(31);
             clientDao.update(fetchedClient);
-            System.out.println("Updated: " + fetchedClient);
+            System.out.println("\nUpdated: " + fetchedClient);
 
             clientDao.delete(fetchedClient);
-            System.out.println("Deleted: " + fetchedClient);
+            System.out.println("\nDeleted: " + fetchedClient);
+
+            System.out.println("\n\nVehicle test with database api");
+            System.out.println("\nSaving test");
+            Car car = new Car("Honda Civic", 1200, 120, 4);
+            addEntity(car, "vehicles");
+
+            System.out.println("\n\nFetching test");
+            Vehicle car2 = getEntity(Vehicle.class, "vehicles", car.getId());
+            System.out.println(car);
+            System.out.println(car2);
+
+            System.out.println("\n\nUpdating test");
+
+            car2.setName("Zygzak McQueen");
+            updateEntity(car2, "vehicles");
+
+            Vehicle car3 = getEntity(Vehicle.class, "vehicles", car2.getId());
+            System.out.println(car2);
+            System.out.println(car3);
+
+            System.out.println("\n\nDeleting test");
+            deleteEntity(Vehicle.class, "vehicles", car3.getId());
+            Vehicle car4 = getEntity(Vehicle.class, "vehicles", car3.getId());
+            System.out.println(car3);
+            System.out.println(car4);
+
+
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -135,7 +183,7 @@ public class DatabaseApi implements CRUDManager {
     public DatabaseApi() {
         initSession();
         System.out.println("Database connection established.");
-        
+        session.execute("USE car_rental");
         this.test();
     }
 
@@ -171,6 +219,18 @@ public class DatabaseApi implements CRUDManager {
                     rentDao.insert((Rent) entity);
                     break;
                 case "vehicles":
+                    VehicleMapper vehicleMapper = new VehicleMapperBuilder(session).withDefaultKeyspace("car_rental").build();
+                    VehicleDao vehicleDao = vehicleMapper.vehicleDao();
+                    if(entity instanceof Car) {
+                        vehicleDao.insert((Car) entity);
+                        System.out.println("Saved: car");
+                    } else if(entity instanceof Truck) {
+                        vehicleDao.insert((Truck) entity);
+                        System.out.println("Saved: truck");
+                    } else if(entity instanceof Motorbike) {
+                        vehicleDao.insert((Motorbike) entity);
+                        System.out.println("Saved: motorbike");
+                    }
                     break;
                 default:
                     throw new RuntimeException("Unsupported table name: " + tableName);
@@ -179,42 +239,136 @@ public class DatabaseApi implements CRUDManager {
             e.printStackTrace();
             throw new RuntimeException("Problem z zapisem danych.");
         } finally {
-            System.out.println("Dane zostaly zapisane.");
+            System.out.println("Zakonczono dodawanie danych.");
         }
     }
     @Override
     public <T> void deleteEntity(Class<T> entityClass, String tableName, UUID id) { // JAKO PARAMETR PODAJEMY np. Vehicle.class
         try {
+            switch (tableName) {
+                case "clients":
+                    ClientMapper clientMapper = new ClientMapperBuilder(session).withDefaultKeyspace("car_rental").build();
+                    ClientDao clientDao = clientMapper.clientDao();
+                    Client client = clientDao.findById(id);
+                    clientDao.delete(client);
+                    break;
+                case "rents":
+                    RentMapper rentMapper = new RentMapperBuilder(session).withDefaultKeyspace("car_rental").build();
+                    RentDao rentDao = rentMapper.rentDao();
+                    Rent rent = rentDao.findById(id);
+                    rentDao.delete(rent);
+                    break;
+                case "vehicles":
+                    VehicleMapper vehicleMapper = new VehicleMapperBuilder(session).withDefaultKeyspace("car_rental").build();
+                    VehicleDao vehicleDao = vehicleMapper.vehicleDao();
+                    Vehicle vehicle = null;
 
+                    vehicle = vehicleDao.findCarById(id);
+
+                    if (vehicle != null) {
+                        vehicleDao.delete((Car) vehicle);
+                        break;
+                    } else {
+                        vehicle = vehicleDao.findTruckById(id);
+                        if (vehicle != null) {
+                            vehicleDao.delete((Truck) vehicle);
+                            break;
+                        } else {
+                            vehicle = vehicleDao.findMotorbikeById(id);
+                            if (vehicle != null) {
+                                vehicleDao.delete((Motorbike) vehicle);
+                                break;
+                            } else {
+                                throw new RuntimeException("Cannot find ordered to delete vehicle");
+                            }
+                        }
+                    }
+                default:
+                    throw new RuntimeException("Unsupported table name: " + tableName);
+            }
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException("Problem z usunieciem danych");
         } finally {
-
+            System.out.println("Zakonczono usuwanie danych.");
         }
     }
     @Override
     public <T> void updateEntity(T entity, String tableName) {
         try {
-
+            switch (tableName) {
+                case "clients":
+                    ClientMapper clientMapper = new ClientMapperBuilder(session).withDefaultKeyspace("car_rental").build();
+                    ClientDao clientDao = clientMapper.clientDao();
+                    clientDao.update((Client) entity);
+                    break;
+                case "rents":
+                    RentMapper rentMapper = new RentMapperBuilder(session).withDefaultKeyspace("car_rental").build();
+                    RentDao rentDao = rentMapper.rentDao();
+                    rentDao.update((Rent) entity);
+                    break;
+                case "vehicles":
+                    VehicleMapper vehicleMapper = new VehicleMapperBuilder(session).withDefaultKeyspace("car_rental").build();
+                    VehicleDao vehicleDao = vehicleMapper.vehicleDao();
+                    if(entity instanceof Car) {
+                        vehicleDao.update((Car) entity);
+                    } else if(entity instanceof Truck) {
+                        vehicleDao.update((Truck) entity);
+                    } else if(entity instanceof Motorbike) {
+                        vehicleDao.update((Motorbike) entity);
+                    }
+                    break;
+                default:
+                    throw new RuntimeException("Unsupported table name: " + tableName);
+            }
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException("Problem z aktualizacja danych");
         } finally {
-
+            System.out.println("Zakonczono aktualizowanie danych.");
         }
     }
     @Override
     public <T> T getEntity(Class<T> entityClass, String tableName, UUID id) {
-        T entity = null;
         try {
-
+            switch (tableName) {
+                case "clients":
+                    ClientMapper clientMapper = new ClientMapperBuilder(session).withDefaultKeyspace("car_rental").build();
+                    ClientDao clientDao = clientMapper.clientDao();
+                    Client client = clientDao.findById(id);
+                    return entityClass.cast(client);
+                case "rents":
+                    RentMapper rentMapper = new RentMapperBuilder(session).withDefaultKeyspace("car_rental").build();
+                    RentDao rentDao = rentMapper.rentDao();
+                    Rent rent = rentDao.findById(id);
+                    return entityClass.cast(rent);
+                case "vehicles":
+                    VehicleMapper vehicleMapper = new VehicleMapperBuilder(session).withDefaultKeyspace("car_rental").build();
+                    VehicleDao vehicleDao = vehicleMapper.vehicleDao();
+                    Vehicle vehicle = null;
+                    vehicle = vehicleDao.findCarById(id);
+                    if (vehicle != null) {
+                        return entityClass.cast(vehicle);
+                    }
+                    vehicle = vehicleDao.findTruckById(id);
+                    if (vehicle != null) {
+                        return entityClass.cast(vehicle);
+                    }
+                    vehicle = vehicleDao.findMotorbikeById(id);
+                    if (vehicle != null) {
+                        return entityClass.cast(vehicle);
+                    }
+                    break;
+                default:
+                    throw new RuntimeException("Unsupported table name: " + tableName);
+            }
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException("Problem z pobraniem danych");
         } finally {
-
+            System.out.println("Zakonczono pobieranie danych.");
         }
-        return entity;
+        System.out.println("Nie znaleziono zadanych danych");
+        return null;
     }
 }

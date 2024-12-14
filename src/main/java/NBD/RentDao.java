@@ -19,7 +19,7 @@ public interface RentDao {
     List<Rent> findAll();
 
     @Query("SELECT * FROM rents WHERE rent_id = :id")
-    Rent findById(long id);
+    Rent findById(UUID id);
 
     @Update
     void update(Rent rent);

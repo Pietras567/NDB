@@ -1,6 +1,12 @@
 package NBD;
 
+import com.datastax.oss.driver.api.mapper.annotations.CqlName;
+import com.datastax.oss.driver.api.mapper.annotations.Entity;
+
+@Entity
+@CqlName("motorbikes")
 public class Motorbike extends Vehicle {
+    @CqlName("engine_capacity")
     private int engineCapacity;
 
     public Motorbike(String name, int weight, int power, int engineCapacity) {

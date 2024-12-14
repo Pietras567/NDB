@@ -1,12 +1,25 @@
 package NBD;
+import com.datastax.oss.driver.api.mapper.annotations.CqlName;
+import com.datastax.oss.driver.api.mapper.annotations.Entity;
+import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+
 public abstract class Vehicle {
-    private UUID Id;
+    @PartitionKey
+    @CqlName("vehicle_id")
+    private UUID id;
+
+    @CqlName("name")
     private String Name;
+
+    @CqlName("weight")
     private int Weight;
+
+    @CqlName("power")
     private int Power;
 
     //@OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -34,7 +47,7 @@ public abstract class Vehicle {
     }
 
     public UUID getId() {
-        return Id;
+        return id;
     }
 
     public int getPower() {
@@ -46,6 +59,7 @@ public abstract class Vehicle {
     }
 
     public Vehicle(String name, int weight, int power) {
+        this.id = UUID.randomUUID();
         Name = name;
         Weight = weight;
         Power = power;
@@ -62,10 +76,14 @@ public abstract class Vehicle {
     @Override
     public String toString() {
         return "Vehicle{" +
-                "id=" + Id +
+                "id=" + id +
                 ", name='" + Name + '\'' +
                 ", weight=" + Weight +
                 ", Power=" + Power +
                 '}';
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
     }
 }
