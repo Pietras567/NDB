@@ -6,6 +6,7 @@ import com.datastax.oss.driver.api.core.config.DriverExecutionProfile;
 import com.datastax.oss.driver.api.core.metadata.schema.KeyspaceMetadata;
 
 import java.net.InetSocketAddress;
+import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -234,7 +235,7 @@ public class DatabaseApi implements CRUDManager {
                     throw new RuntimeException("Unsupported table name: " + tableName);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
             throw new RuntimeException("Problem z zapisem danych.");
         } finally {
             System.out.println("Zakonczono dodawanie danych.");
@@ -285,7 +286,7 @@ public class DatabaseApi implements CRUDManager {
                     throw new RuntimeException("Unsupported table name: " + tableName);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
             throw new RuntimeException("Problem z usunieciem danych");
         } finally {
             System.out.println("Zakonczono usuwanie danych.");
@@ -320,7 +321,7 @@ public class DatabaseApi implements CRUDManager {
                     throw new RuntimeException("Unsupported table name: " + tableName);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
             throw new RuntimeException("Problem z aktualizacja danych");
         } finally {
             System.out.println("Zakonczono aktualizowanie danych.");
@@ -361,7 +362,7 @@ public class DatabaseApi implements CRUDManager {
                     throw new RuntimeException("Unsupported table name: " + tableName);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
             throw new RuntimeException("Problem z pobraniem danych");
         } finally {
             System.out.println("Zakonczono pobieranie danych.");
@@ -378,6 +379,7 @@ public class DatabaseApi implements CRUDManager {
             return rentDao.findByVehicleId(id);
         } catch (Exception e) {
             System.out.println("Napotkano problem podczas wyszukiwania wypozyczen");
+            //e.printStackTrace();
             return null;
         }
     }
@@ -412,13 +414,16 @@ public class DatabaseApi implements CRUDManager {
                             StreamSupport.stream(entities3.spliterator(), false)
                     ).collect(Collectors.toList());
 
+                    //entities.forEach(System.out::println);
+
                     break;
                 default:
                     throw new RuntimeException("Unsupported table name: " + tableName);
             }
         } catch (Exception e) {
             System.out.println("Napotkano problem podczas wyszukiwania wszystkich encji podanej klasy");
-            e.printStackTrace();
+            //e.printStackTrace();
+            return List.of();
         }
         return entities;
     }

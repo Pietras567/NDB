@@ -1,5 +1,6 @@
 package NBD;
 
+import com.datastax.oss.driver.api.core.PagingIterable;
 import com.datastax.oss.driver.api.mapper.annotations.Dao;
 import com.datastax.oss.driver.api.mapper.annotations.Delete;
 import com.datastax.oss.driver.api.mapper.annotations.Insert;
@@ -16,7 +17,7 @@ public interface ClientDao {
     void insert(Client client);
 
     @Select
-    Iterable<Client> findAll();
+    PagingIterable<Client> findAll();
 
     @Query("SELECT * FROM clients WHERE client_id = :client_id")
     Client findById(UUID client_id);

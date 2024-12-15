@@ -1,5 +1,6 @@
 package NBD;
 
+import com.datastax.oss.driver.api.core.PagingIterable;
 import com.datastax.oss.driver.api.mapper.annotations.Dao;
 import com.datastax.oss.driver.api.mapper.annotations.Delete;
 import com.datastax.oss.driver.api.mapper.annotations.Insert;
@@ -16,7 +17,7 @@ public interface RentDao {
     void insert(Rent rent);
 
     @Select
-    Iterable<Rent> findAll();
+    PagingIterable<Rent> findAll();
 
     @Query("SELECT * FROM rents WHERE rent_id = :id")
     Rent findById(UUID id);
@@ -27,12 +28,12 @@ public interface RentDao {
     @Delete
     void delete(Rent rent);
 
-    @Query("SELECT * FROM rent WHERE client_id = :clientId")
-    Iterable<Rent> findByClientId(UUID clientId);
+    @Query("SELECT * FROM rents WHERE (client_id = :clientId) ALLOW FILTERING")
+    PagingIterable<Rent> findByClientId(UUID clientId);
 
-    @Query("SELECT * FROM rent WHERE vehicle_id = :vehicleId")
-    Iterable<Rent> findByVehicleId(UUID vehicleId);
+    @Query("SELECT * FROM rents WHERE (vehicle_id = :vehicleId) ALLOW FILTERING")
+    PagingIterable<Rent> findByVehicleId(UUID vehicleId);
 
-    @Query("SELECT * FROM rent WHERE vehicle_id = :vehicleId AND client_id = :clientId")
-    Iterable<Rent> findByVehicleClientId(UUID vehicleId, UUID clientId);
+    @Query("SELECT * FROM rents WHERE vehicle_id = :vehicleId AND client_id = :clientId ALLOW FILTERING")
+    PagingIterable<Rent> findByVehicleClientId(UUID vehicleId, UUID clientId);
 }

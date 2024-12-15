@@ -1,5 +1,7 @@
 package NBD;
 
+import com.datastax.oss.driver.api.core.PagingIterable;
+import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.mapper.annotations.*;
 
 import java.util.List;
@@ -17,13 +19,13 @@ public interface VehicleDao {
     void insert(Motorbike motorbike);
 
     @Select
-    Iterable<Car> findAllCar();
+    PagingIterable<Car> findAllCar();
 
     @Select
-    Iterable<Motorbike> findAllMotorbike();
+    PagingIterable<Motorbike> findAllMotorbike();
 
     @Select
-    Iterable<Truck> findAllTruck();
+    PagingIterable<Truck> findAllTruck();
 
     @Select
     Car findCarById(UUID id);

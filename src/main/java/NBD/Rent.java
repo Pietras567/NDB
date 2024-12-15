@@ -6,6 +6,7 @@ import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
 import com.datastax.oss.driver.api.mapper.annotations.ClusteringColumn;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import java.time.Instant;
 
 @Entity
 @CqlName("rents")
@@ -22,13 +23,13 @@ public class Rent {
 
     @ClusteringColumn(0)
     @CqlName("start_date")
-    private LocalDateTime startDate;
+    private Instant startDate;
 
     @ClusteringColumn(1)
     @CqlName("end_date")
-    private LocalDateTime endDate;
+    private Instant endDate;
 
-    public Rent(UUID client_id, UUID vehicle_id, LocalDateTime startDate, LocalDateTime endDate) {
+    public Rent(UUID client_id, UUID vehicle_id, Instant startDate, Instant endDate) {
         this.client_id = client_id;
         this.vehicle_id = vehicle_id;
         this.startDate = startDate;
@@ -70,19 +71,19 @@ public class Rent {
         this.vehicle_id = vehicle_id;
     }
 
-    public LocalDateTime getStartDate() {
+    public Instant getStartDate() {
         return startDate;
     }
 
-    public void setStartDate(LocalDateTime startDate) {
+    public void setStartDate(Instant startDate) {
         this.startDate = startDate;
     }
 
-    public LocalDateTime getEndDate() {
+    public Instant getEndDate() {
         return endDate;
     }
 
-    public void setEndDate(LocalDateTime endDate) {
+    public void setEndDate(Instant endDate) {
         this.endDate = endDate;
     }
 
