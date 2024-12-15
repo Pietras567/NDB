@@ -28,11 +28,11 @@ public interface RentDao {
     void delete(Rent rent);
 
     @Query("SELECT * FROM rent WHERE client_id = :clientId")
-    Iterable<Rent> findByClientId(long clientId);
+    Iterable<Rent> findByClientId(UUID clientId);
 
     @Query("SELECT * FROM rent WHERE vehicle_id = :vehicleId")
-    Iterable<Rent> findByVehicleId(long vehicleId);
+    Iterable<Rent> findByVehicleId(UUID vehicleId);
 
     @Query("SELECT * FROM rent WHERE vehicle_id = :vehicleId AND client_id = :clientId")
-    Iterable<Rent> findByVehicleClientId(long vehicleId, long clientId);
+    Iterable<Rent> findByVehicleClientId(UUID vehicleId, UUID clientId);
 }

@@ -1,10 +1,8 @@
 package NBD;
+
 import com.datastax.oss.driver.api.mapper.annotations.CqlName;
-import com.datastax.oss.driver.api.mapper.annotations.Entity;
 import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 
@@ -21,9 +19,6 @@ public abstract class Vehicle {
 
     @CqlName("power")
     private int Power;
-
-    //@OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL, orphanRemoval = true)
-    //private List<Rent> rents = new ArrayList<>();
 
     public Vehicle() {
 
@@ -64,14 +59,6 @@ public abstract class Vehicle {
         Weight = weight;
         Power = power;
     }
-
-    //public List<Rent> getRents() {
-    //    return rents;
-    //}
-
-    //public void setRents(List<Rent> rents) {
-    //    this.rents = rents;
-    //}
 
     @Override
     public String toString() {

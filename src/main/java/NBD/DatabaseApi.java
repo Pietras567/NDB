@@ -3,12 +3,7 @@ package NBD;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.config.DefaultDriverOption;
 import com.datastax.oss.driver.api.core.config.DriverExecutionProfile;
-import com.datastax.oss.driver.api.core.cql.ResultSet;
-import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.metadata.schema.KeyspaceMetadata;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.Persistence;
 
 import java.net.InetSocketAddress;
 import java.util.UUID;
@@ -370,5 +365,16 @@ public class DatabaseApi implements CRUDManager {
         }
         System.out.println("Nie znaleziono zadanych danych");
         return null;
+    }
+
+    Iterable<Rent> getRents(UUID id) {
+        try {
+            RentMapper rentMapper = new RentMapperBuilder(session).withDefaultKeyspace("car_rental").build();
+            RentDao rentDao = rentMapper.rentDao();
+            return rentDao.findByVehicleId(id);
+        } catch (Exception e) {
+            System.out.println("Napotkano problem podczas wyszukiwania wypozyczen");
+            return null;
+        }
     }
 }

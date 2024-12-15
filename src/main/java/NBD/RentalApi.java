@@ -1,102 +1,76 @@
 package NBD;
 
-import jakarta.persistence.*;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 
 public class RentalApi {
-//    private EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("default");
-//
-//    public boolean oddaj(Vehicle vehicle, Client client) {
-//        try {
-//            UUID vehicleId = vehicle.getId();
-//            System.out.println(vehicleId);
-//            EntityManager entityManager = entityManagerFactory.createEntityManager();
-//            //String jpql = "SELECT r FROM Rent r WHERE r.vehicle_id = :vehicleId";
-//            String jpql = null;
-//            TypedQuery<Rent> query = entityManager.createQuery(jpql, Rent.class);
-//            query.setParameter("vehicleId", vehicleId);
-//
-//            List<Rent> list = query.getResultList();
-//            boolean wypozyczony = false;
-//            Rent rent = null;
-//            if(!list.isEmpty()) {
-//                for (Rent r : list) {
-//                    if((LocalDateTime.now().isAfter(r.getStartDate()) || LocalDateTime.now().isEqual(r.getStartDate())) && (LocalDateTime.now().isBefore(r.getEndDate())) || LocalDateTime.now().isEqual(r.getEndDate())) {
-//                        System.out.println("zwracamy");
-//                        wypozyczony = true;
-//                        rent = r;
-//                    }
-//                }
-//            }
-//
-//            if(wypozyczony) {
-//                if(rent.getClient().getId() == client.getId()) {
-//                    DatabaseApi databaseApi = new DatabaseApi();
-//                    rent.setEndDate(LocalDateTime.now());
-//                    databaseApi.updateEntity(rent);
-////                    databaseApi.updateRent(rent);
-//                } else {
-//                    System.out.println("Pojazd byl wypozyczony przez innego klienta. Nie mozesz go zwrocic.");
-//                    return false;
-//                }
-//            } else {
-//                System.out.println("nie zwracamy");
-//                return false;
-//            }
-//        } catch (Exception e) {
-//            System.out.println(e.getMessage());
-//            return false;
-//        }
-//        return true;
-//    }
-//
-//
-//    public boolean wypozycz(Vehicle vehicle, Client client, int days) {
-//        try {
-//            UUID vehicleId = vehicle.getId();
-//            System.out.println(vehicleId);
-//            EntityManager entityManager = entityManagerFactory.createEntityManager();
-//            //String jpql = "SELECT r FROM Rent r WHERE r.vehicle_id = :vehicleId";
-//            String jpql = null;
-//            TypedQuery<Rent> query = entityManager.createQuery(jpql, Rent.class);
-//            query.setParameter("vehicleId", vehicleId);
-//
-//            List<Rent> list = query.getResultList();
-//            boolean wypozyczony = false;
-//            if(!list.isEmpty()) {
-//                for (Rent r : list) {
-//                    if((LocalDateTime.now().isAfter(r.getStartDate()) || LocalDateTime.now().isEqual(r.getStartDate())) && (LocalDateTime.now().isBefore(r.getEndDate())) || LocalDateTime.now().isEqual(r.getEndDate())) {
-//                        System.out.println("nie jadymy");
-//                        wypozyczony = true;
-//                    }
-//                }
-//            }
-//
-//            if(!wypozyczony) {
-//                System.out.println("jadymy");
-//                DatabaseApi Api = new DatabaseApi();
-//                Rent rent = new Rent(client.getId(), vehicle.getId(), LocalDateTime.now(), LocalDateTime.now().plusDays(days));
-//                //rent.setClient(client);
-//                //rent.setVehicle(vehicle);
-//                Api.addEntity(rent);
-//            } else {
-//                return false;
-//            }
-//        } catch (Exception e) {
-//            System.out.println(e.getMessage());
-//            return false;
-//        }
-//        return true;
-//    }
-//
-//    public <T> List<T> getAllEntities(Class<T> entityClass) {
-//        EntityManager entityManager = entityManagerFactory.createEntityManager();
-//        String jpql = "SELECT r FROM %s r".formatted(entityClass.getSimpleName());
-//        TypedQuery<T> query = entityManager.createQuery(jpql, entityClass);
-//        return query.getResultList();
-//    }
+    private DatabaseApi databaseApi = new DatabaseApi();
+
+    public boolean oddaj(Vehicle vehicle, Client client) {
+        try {
+            UUID vehicleId = vehicle.getId();
+
+            Iterable<Rent> list = databaseApi.getRents(vehicleId);
+            boolean wypozyczony = false;
+            Rent rent = null;
+            if(list.iterator().hasNext()) {
+                for (Rent r : list) {
+                    if((LocalDateTime.now().isAfter(r.getStartDate()) || LocalDateTime.now().isEqual(r.getStartDate())) && (LocalDateTime.now().isBefore(r.getEndDate())) || LocalDateTime.now().isEqual(r.getEndDate())) {
+                        wypozyczony = true;
+                        rent = r;
+                    }
+                }
+            }
+
+            if(wypozyczony) {
+                if(rent.getClient().getId() == client.getId()) {
+                    rent.setEndDate(LocalDateTime.now());
+                    databaseApi.updateEntity(rent, "rents");
+                    System.out.println("Pojazd zostal zwrocony.");
+                } else {
+                    System.out.println("Pojazd byl wypozyczony przez innego klienta. Nie mozesz go zwrocic.");
+                    return false;
+                }
+            } else {
+                System.out.println("Nie mozna zwrocic pojazdu, nie jest on aktualnie wypozyczony.");
+                return false;
+            }
+        } catch (Exception e) {
+            System.out.println("Napotkano problem podczas proby wczesniejszego zakanczania wypozyczenia.");
+            return false;
+        }
+        return true;
+    }
+
+
+    public boolean wypozycz(Vehicle vehicle, Client client, int days) {
+        try {
+            UUID vehicleId = vehicle.getId();
+
+            Iterable<Rent> list = databaseApi.getRents(vehicleId);
+
+            boolean wypozyczony = false;
+            if(list.iterator().hasNext()) {
+                for (Rent r : list) {
+                    if((LocalDateTime.now().isAfter(r.getStartDate()) || LocalDateTime.now().isEqual(r.getStartDate())) && (LocalDateTime.now().isBefore(r.getEndDate())) || LocalDateTime.now().isEqual(r.getEndDate())) {
+                        wypozyczony = true;
+                    }
+                }
+            }
+
+            if(!wypozyczony) {
+                Rent rent = new Rent(client.getId(), vehicle.getId(), LocalDateTime.now(), LocalDateTime.now().plusDays(days));
+                databaseApi.addEntity(rent, "rents");
+                System.out.println("Pojazd został wypożyczony.");
+            } else {
+                System.out.println("Nie można wypożyczyć pojazdu, jest on aktualnie wypożyczony.");
+                return false;
+            }
+        } catch (Exception e) {
+            System.out.println("Napotkano problem podczas proby wypozyczenia pojazdu.");
+            return false;
+        }
+        return true;
+    }
 }
