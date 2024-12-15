@@ -6,7 +6,9 @@ import com.datastax.oss.driver.api.core.config.DriverExecutionProfile;
 import com.datastax.oss.driver.api.core.metadata.schema.KeyspaceMetadata;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -376,7 +378,45 @@ public class DatabaseApi implements CRUDManager {
         try {
             RentMapper rentMapper = new RentMapperBuilder(session).withDefaultKeyspace("car_rental").build();
             RentDao rentDao = rentMapper.rentDao();
-            return rentDao.findByVehicleId(id);
+            Iterable<Rent> rents = rentDao.findByVehicleId(id);
+
+            List<Rent> list = new ArrayList<>();
+
+            for (Rent item : rents) {
+                list.add(item);
+            }
+
+//            System.out.println("Lista: ");
+//            for (Rent r : list) {
+//                System.out.println(r);
+//            }
+//            System.out.println("Koniec");
+
+            Map<UUID, Long> idCount = list.stream().collect(Collectors.groupingBy(obj -> {
+                try {
+                    return (UUID) obj.getClass().getMethod("getId").invoke(obj);
+                } catch (Exception e) {
+                    throw new RuntimeException("Napotkano problem podczas usuwania duplikatow");
+                }
+            }, Collectors.counting()));
+
+            List<Rent> filteredList = list.stream().filter(obj -> {
+                try {
+                    return idCount.get(obj.getClass().getMethod("getId").invoke(obj)) == 1;
+                } catch (Exception e) {
+                    throw new RuntimeException("Napotkano problem podczas usuwania duplikatow");
+                }
+            }).toList();
+
+//            System.out.println("Lista przefiltrowana: ");
+//            for (Rent r : filteredList) {
+//                System.out.println(r);
+//            }
+//            System.out.println("Koniec");
+
+            rents = filteredList::iterator;
+
+            return rents;
         } catch (Exception e) {
             System.out.println("Napotkano problem podczas wyszukiwania wypozyczen");
             //e.printStackTrace();
@@ -398,6 +438,49 @@ public class DatabaseApi implements CRUDManager {
                     RentMapper rentMapper = new RentMapperBuilder(session).withDefaultKeyspace("car_rental").build();
                     RentDao rentDao = rentMapper.rentDao();
                     entities = (Iterable<T>) rentDao.findAll();
+
+//                    System.out.println("Przed: ");
+//                    for (T r : entities) {
+//                        System.out.println(r);
+//                    }
+//                    System.out.println("Koniec");
+
+                    List<T> list = new ArrayList<>();
+
+                    for (T item : entities) {
+                        //System.out.println("Dodaje " + item);
+                        list.add(item);
+                    }
+
+//                    System.out.println("Lista: ");
+//                    for (T r : list) {
+//                        System.out.println(r);
+//                    }
+//                    System.out.println("Koniec");
+
+                    Map<UUID, Long> idCount = list.stream().collect(Collectors.groupingBy(obj -> {
+                        try {
+                            return (UUID) obj.getClass().getMethod("getId").invoke(obj);
+                        } catch (Exception e) {
+                            throw new RuntimeException("Napotkano problem podczas usuwania duplikatow");
+                        }
+                    }, Collectors.counting()));
+
+                    List<T> filteredList = list.stream().filter(obj -> {
+                        try {
+                            return idCount.get(obj.getClass().getMethod("getId").invoke(obj)) == 1;
+                        } catch (Exception e) {
+                            throw new RuntimeException("Napotkano problem podczas usuwania duplikatow");
+                        }
+                    }).toList();
+
+                    entities = filteredList::iterator;
+
+//                    System.out.println("Po: ");
+//                    for (T r : entities) {
+//                        System.out.println(r);
+//                    }
+//                    System.out.println("Koniec");
                     break;
                 case "vehicles":
                     VehicleMapper vehicleMapper = new VehicleMapperBuilder(session).withDefaultKeyspace("car_rental").build();
@@ -413,8 +496,6 @@ public class DatabaseApi implements CRUDManager {
                             ),
                             StreamSupport.stream(entities3.spliterator(), false)
                     ).collect(Collectors.toList());
-
-                    //entities.forEach(System.out::println);
 
                     break;
                 default:

@@ -30,6 +30,7 @@ public class Rent {
     private Instant endDate;
 
     public Rent(UUID client_id, UUID vehicle_id, Instant startDate, Instant endDate) {
+        this.id = UUID.randomUUID();
         this.client_id = client_id;
         this.vehicle_id = vehicle_id;
         this.startDate = startDate;
