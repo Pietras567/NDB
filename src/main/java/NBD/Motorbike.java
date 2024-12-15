@@ -25,4 +25,11 @@ public class Motorbike extends Vehicle {
     public void setEngineCapacity(int engineCapacity) {
         this.engineCapacity = engineCapacity;
     }
+
+    @Override
+    public String toString() {
+        return "Motorbike{" +
+                "engineCapacity=" + engineCapacity +
+                "} " + super.toString();
+    }
 }

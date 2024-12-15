@@ -17,13 +17,13 @@ public interface VehicleDao {
     void insert(Motorbike motorbike);
 
     @Select
-    List<Car> findAllCar();
+    Iterable<Car> findAllCar();
 
     @Select
-    List<Motorbike> findAllMotorbike();
+    Iterable<Motorbike> findAllMotorbike();
 
     @Select
-    List<Truck> findAllTruck();
+    Iterable<Truck> findAllTruck();
 
     @Select
     Car findCarById(UUID id);

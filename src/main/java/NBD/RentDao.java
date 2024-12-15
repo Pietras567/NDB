@@ -16,7 +16,7 @@ public interface RentDao {
     void insert(Rent rent);
 
     @Select
-    List<Rent> findAll();
+    Iterable<Rent> findAll();
 
     @Query("SELECT * FROM rents WHERE rent_id = :id")
     Rent findById(UUID id);

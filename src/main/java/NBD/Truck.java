@@ -25,4 +25,11 @@ public class Truck extends Vehicle {
     public void setLoadCapacity(int loadCapacity) {
         this.loadCapacity = loadCapacity;
     }
+
+    @Override
+    public String toString() {
+        return "Truck{" +
+                "loadCapacity=" + loadCapacity +
+                "} " + super.toString();
+    }
 }

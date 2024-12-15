@@ -7,4 +7,6 @@ public interface CRUDManager {
     <T> void deleteEntity(Class<T> entityClass, String tableName, UUID id);
     <T> void updateEntity(T entity, String tableName);
     <T> T getEntity(Class<T> entityClass, String tableName, UUID id);
+    Iterable<Rent> getRents(UUID id);
+    <T> Iterable<T> getAllEntities(Class<T> entityClass, String tableName);
 }

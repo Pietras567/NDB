@@ -7,6 +7,9 @@ import com.datastax.oss.driver.api.core.metadata.schema.KeyspaceMetadata;
 
 import java.net.InetSocketAddress;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 public class DatabaseApi implements CRUDManager {
     private static CqlSession session;
@@ -367,7 +370,8 @@ public class DatabaseApi implements CRUDManager {
         return null;
     }
 
-    Iterable<Rent> getRents(UUID id) {
+    @Override
+    public Iterable<Rent> getRents(UUID id) {
         try {
             RentMapper rentMapper = new RentMapperBuilder(session).withDefaultKeyspace("car_rental").build();
             RentDao rentDao = rentMapper.rentDao();
@@ -376,5 +380,46 @@ public class DatabaseApi implements CRUDManager {
             System.out.println("Napotkano problem podczas wyszukiwania wypozyczen");
             return null;
         }
+    }
+
+    @Override
+    public <T> Iterable<T> getAllEntities(Class<T> entityClass, String tableName) {
+        Iterable<T> entities = null;
+        try {
+            switch (tableName) {
+                case "clients":
+                    ClientMapper clientMapper = new ClientMapperBuilder(session).withDefaultKeyspace("car_rental").build();
+                    ClientDao clientDao = clientMapper.clientDao();
+                    entities = (Iterable<T>) clientDao.findAll();
+                    break;
+                case "rents":
+                    RentMapper rentMapper = new RentMapperBuilder(session).withDefaultKeyspace("car_rental").build();
+                    RentDao rentDao = rentMapper.rentDao();
+                    entities = (Iterable<T>) rentDao.findAll();
+                    break;
+                case "vehicles":
+                    VehicleMapper vehicleMapper = new VehicleMapperBuilder(session).withDefaultKeyspace("car_rental").build();
+                    VehicleDao vehicleDao = vehicleMapper.vehicleDao();
+                    Iterable<T> entities1 = (Iterable<T>) vehicleDao.findAllCar();
+                    Iterable<T> entities2 = (Iterable<T>) vehicleDao.findAllTruck();
+                    Iterable<T> entities3 = (Iterable<T>) vehicleDao.findAllMotorbike();
+
+                    entities = Stream.concat(
+                            Stream.concat(
+                                    StreamSupport.stream(entities1.spliterator(), false),
+                                    StreamSupport.stream(entities2.spliterator(), false)
+                            ),
+                            StreamSupport.stream(entities3.spliterator(), false)
+                    ).collect(Collectors.toList());
+
+                    break;
+                default:
+                    throw new RuntimeException("Unsupported table name: " + tableName);
+            }
+        } catch (Exception e) {
+            System.out.println("Napotkano problem podczas wyszukiwania wszystkich encji podanej klasy");
+            e.printStackTrace();
+        }
+        return entities;
     }
 }

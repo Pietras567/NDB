@@ -16,7 +16,7 @@ public interface ClientDao {
     void insert(Client client);
 
     @Select
-    List<Client> findAll();
+    Iterable<Client> findAll();
 
     @Query("SELECT * FROM clients WHERE client_id = :client_id")
     Client findById(UUID client_id);
