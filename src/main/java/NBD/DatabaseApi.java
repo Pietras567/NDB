@@ -21,7 +21,7 @@ public class DatabaseApi implements CRUDManager {
         session = CqlSession.builder()
                 .addContactPoint(new InetSocketAddress("cassandra1", 9042))
                 .addContactPoint(new InetSocketAddress("cassandra2", 9043))
-                .addContactPoint(new InetSocketAddress("cassandra3", 9044))
+//                .addContactPoint(new InetSocketAddress("cassandra3", 9044))
                 .withLocalDatacenter("DC1")
                 .withAuthCredentials("carRental", "carRentalPassword")
                 .build();
@@ -185,7 +185,7 @@ public class DatabaseApi implements CRUDManager {
         initSession();
         System.out.println("Database connection established.");
         session.execute("USE car_rental");
-        this.test();
+//        this.test();
     }
 
 
@@ -237,7 +237,7 @@ public class DatabaseApi implements CRUDManager {
                     throw new RuntimeException("Unsupported table name: " + tableName);
             }
         } catch (Exception e) {
-            //e.printStackTrace();
+//            e.printStackTrace();
             throw new RuntimeException("Problem z zapisem danych.");
         } finally {
             System.out.println("Zakonczono dodawanie danych.");

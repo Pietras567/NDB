@@ -11,9 +11,9 @@ public class Main {
 
 
         RentalApi rentalApi = new RentalApi();
-        Vehicle car1 = new Car("yaris", 1500, 261, 5);
-        Vehicle car2 = new Car("126p", 700, 30, 5);
-        Vehicle car3 = new Car("poldon", 1200, 161, 5);
+        Vehicle car1 = new Car("firanka", 1500, 261, 5);
+        Vehicle car2 = new Car("zaba", 700, 30, 5);
+        Vehicle car3 = new Car("mrpolska", 1200, 161, 5);
 
         databaseApi.addEntity(car1, "vehicles");
         databaseApi.addEntity(car2, "vehicles");
