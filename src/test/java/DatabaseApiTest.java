@@ -131,14 +131,6 @@ public class DatabaseApiTest {
         }
 
         assertEquals(2, rentList.size());
-//        System.out.println("TUTAJ");
-//        rents.forEach(System.out::println);
-//        System.out.println(client1.getId());
-//        System.out.println(client2.getId());
-//        System.out.println(rentList.get(0).getClient_id());
-//        System.out.println(rentList.get(1).getClient_id());
-//        System.out.println(rentList);
-//        System.out.println("TUTAJ");
 
         int counter = 0;
         for (Rent rent : rentList) {
@@ -150,6 +142,20 @@ public class DatabaseApiTest {
         assertEquals(car.getId(), rentList.get(0).getVehicle_id());
         assertEquals(car.getId(), rentList.get(1).getVehicle_id());
 
+        this.cleanup();
+    }
+
+    @Test
+    public void getRents() {
+        DatabaseApi api = new DatabaseApi();
+        RentalApi rentalApi = new RentalApi();
+        Car car = new Car("car_test",2900,640,4);
+        Client client1 = new Client("Adrian", 30);
+        rentalApi.wypozycz(car, client1, 10);
+        rentalApi.oddaj(car, client1); // utworzenie duplikatu
+        Iterable<Rent> rents = api.getRents(car.getId());
+        // false bo usunelo oba duplikaty
+        assertFalse(rents.iterator().hasNext());
         this.cleanup();
     }
 }

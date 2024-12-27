@@ -21,7 +21,7 @@ public class DatabaseApi implements CRUDManager {
         session = CqlSession.builder()
                 .addContactPoint(new InetSocketAddress("cassandra1", 9042))
                 .addContactPoint(new InetSocketAddress("cassandra2", 9043))
-//                .addContactPoint(new InetSocketAddress("cassandra3", 9044))
+                .addContactPoint(new InetSocketAddress("cassandra3", 9044))
                 .withLocalDatacenter("DC1")
                 .withAuthCredentials("carRental", "carRentalPassword")
                 .build();
@@ -408,11 +408,11 @@ public class DatabaseApi implements CRUDManager {
                 }
             }).toList();
 
-//            System.out.println("Lista przefiltrowana: ");
-//            for (Rent r : filteredList) {
-//                System.out.println(r);
-//            }
-//            System.out.println("Koniec");
+            System.out.println("Lista przefiltrowana: ");
+            for (Rent r : filteredList) {
+                System.out.println(r);
+            }
+            System.out.println("Koniec");
 
             rents = filteredList::iterator;
 
@@ -434,10 +434,17 @@ public class DatabaseApi implements CRUDManager {
                     ClientDao clientDao = clientMapper.clientDao();
                     entities = (Iterable<T>) clientDao.findAll();
                     break;
+                case "test_rents":
+                    RentMapper rentMapper1 = new RentMapperBuilder(session).withDefaultKeyspace("car_rental").build();
+                    RentDao rentDao1 = rentMapper1.rentDao();
+                    entities = (Iterable<T>) rentDao1.findAll();
+                    break;
                 case "rents":
                     RentMapper rentMapper = new RentMapperBuilder(session).withDefaultKeyspace("car_rental").build();
                     RentDao rentDao = rentMapper.rentDao();
                     entities = (Iterable<T>) rentDao.findAll();
+//                    System.out.println("W RENTS");
+//                    entities.forEach(System.out::println);
 
 //                    System.out.println("Przed: ");
 //                    for (T r : entities) {
@@ -451,6 +458,15 @@ public class DatabaseApi implements CRUDManager {
                         //System.out.println("Dodaje " + item);
                         list.add(item);
                     }
+//                    System.out.println("TESTOWANIE ID");
+//                    for (T item : list) {
+//                        try {
+//                            System.out.println("ID: " + item.getClass().getMethod("getId").invoke(item));
+//                        } catch (Exception e) {
+//                            System.out.println("Błąd podczas odczytu ID");
+//                        }
+//                    }
+//                    System.out.println("KONIEC TESTOWANIE ID");
 
 //                    System.out.println("Lista: ");
 //                    for (T r : list) {
@@ -465,6 +481,11 @@ public class DatabaseApi implements CRUDManager {
                             throw new RuntimeException("Napotkano problem podczas usuwania duplikatow");
                         }
                     }, Collectors.counting()));
+                    System.out.println("MAPA");
+                    for (Map.Entry<UUID, Long> entry : idCount.entrySet()) {
+                        System.out.println(entry.getKey() + " " + entry.getValue());
+                    }
+                    System.out.println("KONIEC MAPA");
 
                     List<T> filteredList = list.stream().filter(obj -> {
                         try {
@@ -473,8 +494,14 @@ public class DatabaseApi implements CRUDManager {
                             throw new RuntimeException("Napotkano problem podczas usuwania duplikatow");
                         }
                     }).toList();
+//                    System.out.println("FILTR");
+//                    System.out.println(filteredList);
+//                    System.out.println("KONIEC FILTR");
 
                     entities = filteredList::iterator;
+//                    System.out.println("PRZED KOLEJNYM ENTITY");
+//                    System.out.println(entities);
+//                    entities.forEach(System.out::println);
 
 //                    System.out.println("Po: ");
 //                    for (T r : entities) {
