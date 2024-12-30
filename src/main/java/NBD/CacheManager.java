@@ -1,14 +1,50 @@
 package NBD;
 
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.lang.reflect.InvocationTargetException;
 
+import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.common.serialization.StringSerializer;
+import java.util.Properties;
+
 public class CacheManager implements CRUDManager {
     private static RedisManager redisManager = new RedisManager();
     private static DatabaseApi databaseApi = new DatabaseApi();
+    private static final String[] RENTAL_CENTERS = {"CarRental", "JadymyRental", "ZygzakMcQueen"};
+
+    public CacheManager() {
+        // create Producer properties
+        String bootstrapServers = "127.0.0.1:9092";
+        Properties properties = new Properties();
+        properties.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        properties.setProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+        properties.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+
+        // create the producer
+        KafkaProducer<String, String> producer = new KafkaProducer<>(properties);
+
+        // create a producer record
+        int rentalId = 1;
+        String rentalCenter = RENTAL_CENTERS[rentalId];
+        String rentalTime = java.time.LocalDateTime.now().toString();
+        String rentInfo = String.format("{\"rental_id\": %d, \"rental_center\": \"%s\", \"item\": \"Samochód\", \"rental_time\": \"%s\"}", rentalId, rentalCenter, rentalTime);
+
+        ProducerRecord<String, String> producerRecord = new ProducerRecord<>("rents", rentInfo);
+
+        // send data - asynchronous
+        producer.send(producerRecord);
+
+        // flush data - synchronous
+        producer.flush();
+
+        // flush and close producer
+        producer.close();
+    }
 
     @Override
     public <T> void addEntity(T entity, String collectionName) {

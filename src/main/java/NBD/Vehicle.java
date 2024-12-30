@@ -13,6 +13,7 @@ public abstract class Vehicle {
     private String Name;
     private int Weight;
     private int Power;
+    private int rentalId;
 
     public Vehicle() {
 
@@ -44,6 +45,14 @@ public abstract class Vehicle {
 
     public void setPower(int power) {
         Power = power;
+    }
+
+    public int getRentalId() {
+        return rentalId;
+    }
+
+    public void setRentalId(int rentalId) {
+        this.rentalId = rentalId;
     }
 
     public Vehicle(String name, int weight, int power) {

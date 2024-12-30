@@ -30,12 +30,14 @@ public class VehicleCodec implements Codec<Vehicle> {
         String name;
         int power;
         int weight;
+        int rentalId;
 
         Vehicle vehicle;
         switch (type) {
             case "NBD.Car":
                 name = reader.readString("name");
                 power = reader.readInt32("power");
+                rentalId = reader.readInt32("rentalId");
                 int seats = reader.readInt32("seats");
                 weight = reader.readInt32("weight");
 
@@ -47,6 +49,7 @@ public class VehicleCodec implements Codec<Vehicle> {
                 int loadCapacity = reader.readInt32("loadCapacity");
                 name = reader.readString("name");
                 power = reader.readInt32("power");
+                rentalId = reader.readInt32("rentalId");
                 weight = reader.readInt32("weight");
 
                 vehicle = new Truck(name, power, weight, loadCapacity);
@@ -57,6 +60,7 @@ public class VehicleCodec implements Codec<Vehicle> {
                 int engineCapacity = reader.readInt32("engineCapacity");
                 name = reader.readString("name");
                 power = reader.readInt32("power");
+                rentalId = reader.readInt32("rentalId");
                 weight = reader.readInt32("weight");
 
                 vehicle = new Motorbike(name, power, weight, engineCapacity);
@@ -66,7 +70,7 @@ public class VehicleCodec implements Codec<Vehicle> {
             default:
                 throw new IllegalArgumentException("Unknown vehicle type: " + type);
         }
-
+        vehicle.setRentalId(rentalId);
         vehicle.setId(id);
         reader.readEndDocument();
         return vehicle;
@@ -87,18 +91,21 @@ public class VehicleCodec implements Codec<Vehicle> {
             case "Car":
                 writer.writeString("name", ((Car) vehicle).getName());
                 writer.writeInt32("power", ((Car) vehicle).getPower());
+                writer.writeInt32("rentalId", ((Car) vehicle).getRentalId());
                 writer.writeInt32("seats", ((Car) vehicle).getSeats());
                 writer.writeInt32("weight", ((Car) vehicle).getWeight());
                 break;
             case "Truck":
                 writer.writeString("name", ((Truck) vehicle).getName());
                 writer.writeInt32("power", ((Truck) vehicle).getPower());
+                writer.writeInt32("rentalId", ((Truck) vehicle).getRentalId());
                 writer.writeInt32("weight", ((Truck) vehicle).getWeight());
                 writer.writeInt32("loadCapacity", ((Truck) vehicle).getLoadCapacity());
                 break;
             case "Motorbike":
                 writer.writeString("name", ((Motorbike) vehicle).getName());
                 writer.writeInt32("power", ((Motorbike) vehicle).getPower());
+                writer.writeInt32("rentalId", ((Motorbike) vehicle).getRentalId());
                 writer.writeInt32("weight", ((Motorbike) vehicle).getWeight());
                 writer.writeInt32("engineCapacity", ((Motorbike) vehicle).getEngineCapacity());
                 break;
