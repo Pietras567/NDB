@@ -17,7 +17,7 @@ public class CacheManager implements CRUDManager {
     private static DatabaseApi databaseApi = new DatabaseApi();
     private static final String[] RENTAL_CENTERS = {"CarRental", "JadymyRental", "ZygzakMcQueen"};
 
-    public CacheManager() {
+    public void sendToTopic(Rent rent) {
         // create Producer properties
         String bootstrapServers = "127.0.0.1:9092";
         Properties properties = new Properties();
@@ -29,10 +29,18 @@ public class CacheManager implements CRUDManager {
         KafkaProducer<String, String> producer = new KafkaProducer<>(properties);
 
         // create a producer record
-        int rentalId = 1;
+        ObjectId rentID = rent.getId();
+        String clientName = databaseApi.getEntity(Client.class, "clients", rent.getClient_id()).getName();
+        String vehicleName = databaseApi.getEntity(Vehicle.class, "vehicles",rent.getVehicle_id()).getName();
+        LocalDateTime startTime = rent.getStartDate();
+        LocalDateTime endTime = rent.getEndDate();
+
+        int rentalId = databaseApi.getEntity(Vehicle.class, "vehicles",rent.getVehicle_id()).getRentalId();
         String rentalCenter = RENTAL_CENTERS[rentalId];
+
         String rentalTime = java.time.LocalDateTime.now().toString();
-        String rentInfo = String.format("{\"rental_id\": %d, \"rental_center\": \"%s\", \"item\": \"Samochód\", \"rental_time\": \"%s\"}", rentalId, rentalCenter, rentalTime);
+        String rentInfo = String.format("{\"rentID\": %s, \"rental_center\": \"%s\", \"clientName\": \"%s\", \"vehicleName\": \"%s\", \"rental_time\": \"%s\"}",
+                rentID, rentalCenter, clientName, vehicleName, startTime);
 
         ProducerRecord<String, String> producerRecord = new ProducerRecord<>("rents", rentInfo);
 
