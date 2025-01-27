@@ -118,9 +118,9 @@ public class Main {
                     } while (true);
                 case 2:
                     System.out.print("Tryb pracy konsumenta");
-                    DatabaseApi databaseApi = new DatabaseApi();
-                    List<KafkaConsumer<UUID, String>> consumers = databaseApi.createConsumerGroup();
-                    databaseApi.consume(consumers.getFirst());
+                    Consumer consumer = new Consumer();
+                    List<KafkaConsumer<UUID, String>> consumers = consumer.createConsumerGroup();
+                    consumer.consume(consumers.getFirst());
                 default:
                     break;
             }

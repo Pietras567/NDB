@@ -15,44 +15,7 @@ import java.util.Properties;
 public class CacheManager implements CRUDManager {
     private static RedisManager redisManager = new RedisManager();
     private static DatabaseApi databaseApi = new DatabaseApi();
-    private static final String[] RENTAL_CENTERS = {"CarRental", "JadymyRental", "ZygzakMcQueen"};
 
-    public void sendToTopic(Rent rent) {
-        // create Producer properties
-        String bootstrapServers = "127.0.0.1:9092";
-        Properties properties = new Properties();
-        properties.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        properties.setProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
-        properties.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
-
-        // create the producer
-        KafkaProducer<String, String> producer = new KafkaProducer<>(properties);
-
-        // create a producer record
-        ObjectId rentID = rent.getId();
-        String clientName = databaseApi.getEntity(Client.class, "clients", rent.getClient_id()).getName();
-        String vehicleName = databaseApi.getEntity(Vehicle.class, "vehicles",rent.getVehicle_id()).getName();
-        LocalDateTime startTime = rent.getStartDate();
-        LocalDateTime endTime = rent.getEndDate();
-
-        int rentalId = databaseApi.getEntity(Vehicle.class, "vehicles",rent.getVehicle_id()).getRentalId();
-        String rentalCenter = RENTAL_CENTERS[rentalId];
-
-        String rentalTime = java.time.LocalDateTime.now().toString();
-        String rentInfo = String.format("{\"rentID\": %s, \"rental_center\": \"%s\", \"clientName\": \"%s\", \"vehicleName\": \"%s\", \"rental_time\": \"%s\"}",
-                rentID, rentalCenter, clientName, vehicleName, startTime);
-
-        ProducerRecord<String, String> producerRecord = new ProducerRecord<>("rents", rentInfo);
-
-        // send data - asynchronous
-        producer.send(producerRecord);
-
-        // flush data - synchronous
-        producer.flush();
-
-        // flush and close producer
-        producer.close();
-    }
 
     @Override
     public <T> void addEntity(T entity, String collectionName) {

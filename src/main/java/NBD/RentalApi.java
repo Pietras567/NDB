@@ -12,6 +12,9 @@ import static com.mongodb.client.model.Filters.eq;
 public class RentalApi {
     private DatabaseApi databaseApi = new DatabaseApi();
     private MongoDatabase database = databaseApi.getDatabase();
+    private Producer producer = new Producer(databaseApi);
+
+
 
     public boolean oddaj(Vehicle vehicle, Client client) {
         try {
@@ -34,7 +37,8 @@ public class RentalApi {
             if(wypozyczony) {
                 if(rent.getClient().getId().equals(client.getId())) {
                     rent.setEndDate(LocalDateTime.now());
-                    databaseApi.updateEntity(rent, "rents", rent.getId());
+//                    databaseApi.updateEntity(rent, "rents", rent.getId());
+                    producer.sendToTopic(rent); // wyslanie do teamtu zmodyfikowanego wypozyczenia
                     System.out.println("Pojazd został zwrócony");
                 } else {
                     System.out.println("Pojazd byl wypozyczony przez innego klienta. Nie mozesz go zwrocic.");
@@ -73,7 +77,8 @@ public class RentalApi {
                 Rent rent = new Rent(client.getId(), vehicle.getId(), LocalDateTime.now(), LocalDateTime.now().plusDays(days));
                 //rent.setClient(client);
                 //rent.setVehicle(vehicle);
-                databaseApi.addEntity(rent, "rents");
+//                databaseApi.addEntity(rent, "rents");
+                producer.sendToTopic(rent); // wyslanie do tematu wypozyczenia
             } else {
                 return false;
             }
