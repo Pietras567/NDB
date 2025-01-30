@@ -46,6 +46,10 @@ public class RedisManager {
     }
 
     public void setDocument(String key, Document document, int TTL) {
+        if (TTL == 0) {
+            pool.set(key, document.toJson());
+            return;
+        }
         pool.setex(key, TTL, document.toJson());
     }
 

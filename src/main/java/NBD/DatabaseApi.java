@@ -35,10 +35,6 @@ import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 
 
 public class DatabaseApi implements CRUDManager {
-
-    //Properties properties = new Properties();
-
-
     private final static ConnectionString connectionString = new ConnectionString(
             "mongodb://mongo1:27017,mongo2:27018,mongo3:27019/?replicaSet=replica_set_single"
     );

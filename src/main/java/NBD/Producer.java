@@ -14,14 +14,20 @@ import org.apache.kafka.common.errors.TopicExistsException;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.bson.types.ObjectId;
 
+import java.nio.ByteBuffer;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
+import java.time.ZoneOffset;
+import java.util.UUID;
 
 public class Producer {
     private static final String[] RENTAL_CENTERS = {"CarRental", "JadymyRental", "ZygzakMcQueen"};
     private DatabaseApi databaseApi;
+
+    private static final LocalDateTime UUID_1_EPOCH = LocalDateTime.of(1582, 10, 15, 0, 0, 0).atOffset(ZoneOffset.UTC).toLocalDateTime();
+    private static final long UUID_TICKS_PER_SECOND = 10_000_000L;
 
     public Producer(DatabaseApi databaseApi) {
         this.databaseApi = databaseApi;
@@ -66,24 +72,31 @@ public class Producer {
         // create a producer record
         ObjectId rentID = rent.getId();
         String clientName = databaseApi.getEntity(Client.class, "clients", rent.getClient_id()).getName();
-        String vehicleName = databaseApi.getEntity(Vehicle.class, "vehicles",rent.getVehicle_id()).getName();
+        String vehicleName = databaseApi.getEntity(Vehicle.class, "vehicles", rent.getVehicle_id()).getName();
         LocalDateTime startTime = rent.getStartDate();
         LocalDateTime endTime = rent.getEndDate();
 
-        int rentalId = databaseApi.getEntity(Vehicle.class, "vehicles",rent.getVehicle_id()).getRentalId();
+        int rentalId = databaseApi.getEntity(Vehicle.class, "vehicles", rent.getVehicle_id()).getRentalId();
         String rentalCenter = RENTAL_CENTERS[rentalId];
 
-        String rentalTime = java.time.LocalDateTime.now().toString();
         String rentInfo = String.format("{\"rentID\": %s, \"rental_center\": \"%s\", \"clientName\": \"%s\", \"vehicleName\": \"%s\", \"rental_time\": \"%s\"}",
                 rentID, rentalCenter, clientName, vehicleName, startTime);
 
         producer.initTransactions();
         try {
             producer.beginTransaction();
-            for (int i = 0; i < 10; i++) {
-                ProducerRecord<String, String> producerRecord = new ProducerRecord<>("rents", rentInfo);
-                // send data - asynchronous
-                producer.send(producerRecord);
+            boolean sent = false;
+            int attempt = 0;
+            ProducerRecord<String, String> producerRecord = new ProducerRecord<>("rents", toUUID(rent.getId()).toString(), rentInfo);
+            while (!sent && attempt < 10) {
+                try {
+                    producer.send(producerRecord).get();
+                    sent = true;
+                    System.out.println("Successfully sent: " + producerRecord);
+                } catch (InterruptedException | ExecutionException e) {
+                    System.out.println("Retrying send due to failure: " + e.getMessage());
+                    attempt++;
+                }
             }
             producer.commitTransaction();
         } catch (ProducerFencedException pfe) {
@@ -91,12 +104,22 @@ public class Producer {
         } catch (KafkaException ke) {
             producer.abortTransaction();
         }
+    }
 
+    public static UUID toUUID(ObjectId objectId) {
+        byte[] objectidBytes = objectId.toByteArray();
+        byte[] uuidBytes = new byte[16];
 
-//        // flush data - synchronous
-//        producer.flush();
-//
-//        // flush and close producer
-//        producer.close();
+        System.arraycopy(objectidBytes, 0, uuidBytes, 0, 6);
+        System.arraycopy(objectidBytes, 6, uuidBytes, 10, 6);
+
+        uuidBytes[6]  &= 0x0f;  /* clear version        */
+        uuidBytes[6]  |= 0x40;  /* set to version 4     */
+        uuidBytes[8]  &= 0x3f;  /* clear variant        */
+        uuidBytes[8]  |= 0x80;  /* set to IETF variant  */
+
+        ByteBuffer buffer = ByteBuffer.wrap(uuidBytes);
+
+        return new UUID(buffer.getLong(), buffer.getLong());
     }
 }

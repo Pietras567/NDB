@@ -13,13 +13,13 @@ public class RentalApi {
     private DatabaseApi databaseApi = new DatabaseApi();
     private MongoDatabase database = databaseApi.getDatabase();
     private Producer producer = new Producer(databaseApi);
+    private CacheManager cacheManager = new CacheManager();
 
 
 
     public boolean oddaj(Vehicle vehicle, Client client) {
         try {
             ObjectId vehicleId = vehicle.getId();
-//            System.out.println(vehicleId);
             MongoCollection<Rent> rentCollection = database.getCollection("rents", Rent.class);
 
             List<Rent> list = rentCollection.find(eq("vehicle_id", vehicleId)).into(new ArrayList<>());
@@ -37,7 +37,7 @@ public class RentalApi {
             if(wypozyczony) {
                 if(rent.getClient().getId().equals(client.getId())) {
                     rent.setEndDate(LocalDateTime.now());
-//                    databaseApi.updateEntity(rent, "rents", rent.getId());
+                    cacheManager.updateEntity(rent, "rents", rent.getId());
                     producer.sendToTopic(rent); // wyslanie do teamtu zmodyfikowanego wypozyczenia
                     System.out.println("Pojazd został zwrócony");
                 } else {
@@ -59,7 +59,6 @@ public class RentalApi {
     public boolean wypozycz(Vehicle vehicle, Client client, int days) {
         try {
             ObjectId vehicleId = vehicle.getId();
-            System.out.println(vehicleId);
             MongoCollection<Rent> rentCollection = database.getCollection("rents", Rent.class);
             List<Rent> list = rentCollection.find(eq("vehicle_id", vehicleId)).into(new ArrayList<>());
             boolean wypozyczony = false;
@@ -75,9 +74,7 @@ public class RentalApi {
             if(!wypozyczony) {
                 System.out.println("Pojazd został wypożyczony");
                 Rent rent = new Rent(client.getId(), vehicle.getId(), LocalDateTime.now(), LocalDateTime.now().plusDays(days));
-                //rent.setClient(client);
-                //rent.setVehicle(vehicle);
-//                databaseApi.addEntity(rent, "rents");
+                cacheManager.addEntity(rent, "rents");
                 producer.sendToTopic(rent); // wyslanie do tematu wypozyczenia
             } else {
                 return false;
