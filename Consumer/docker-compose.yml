@@ -1,0 +1,22 @@
+version: '3.8'
+services:
+    redis-consumer-data:
+        image: redis/redis-stack:latest
+        volumes:
+            - redis-consumer-data:/bitnami/redis/data
+        ports:
+            - "8002:8001"
+            - "6380:6379"
+        networks:
+            - redisnet
+        environment:
+            - REDIS_ARGS=--appendonly yes --appendfilename appendonly.aof
+
+
+volumes:
+    redis-consumer-data:
+        driver: local
+
+networks:
+    redisnet:
+        driver: bridge
