@@ -83,6 +83,8 @@ public class CacheManager implements CRUDManager {
 
     @Override
     public <T> void updateEntity(T entity, String collectionName, ObjectId id) {
+        databaseApi.updateEntity(entity, collectionName, id);
+
         int TTL;
         switch (collectionName) {
             case "clients":
@@ -92,22 +94,22 @@ public class CacheManager implements CRUDManager {
                 TTL = 1800;
                 break;
             case "rents":
-                LocalDateTime startTime;
-                LocalDateTime endTime;
-                try {
-                    startTime = (LocalDateTime) entity.getClass().getMethod("getStartDate").invoke(entity);
-                    endTime = (LocalDateTime) entity.getClass().getMethod("getEndDate").invoke(entity);
-                } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-                    throw new RuntimeException(e);
-                }
+//                LocalDateTime startTime;
+//                LocalDateTime endTime;
+//                try {
+//                    startTime = (LocalDateTime) entity.getClass().getMethod("getStartDate").invoke(entity);
+//                    endTime = (LocalDateTime) entity.getClass().getMethod("getEndDate").invoke(entity);
+//                } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+//                    throw new RuntimeException(e);
+//                }
+//
+//                TTL = (int) Duration.between(startTime, endTime).getSeconds();
+//                break;
 
-                TTL = (int) Duration.between(startTime, endTime).getSeconds();
-                break;
+                return;
             default:
                 throw new IllegalArgumentException("Unknown collection: " + collectionName);
         }
-
-        databaseApi.updateEntity(entity, collectionName, id);
 
         try {
             Document document = new Document();
@@ -144,6 +146,17 @@ public class CacheManager implements CRUDManager {
         }
 
         if (document != null) {
+            switch (collectionName) {
+                case "clients":
+                    TTL = 1800;
+                    break;
+                case "vehicles":
+                    TTL = 1800;
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unknown collection: " + collectionName);
+            }
+
             try {
                 T entity = entityClass.getDeclaredConstructor().newInstance();
 
@@ -156,29 +169,6 @@ public class CacheManager implements CRUDManager {
                     }
                     //System.out.println(entity.getClass().getDeclaredFields().toString());
                     currentClass = currentClass.getSuperclass();
-                }
-
-                switch (collectionName) {
-                    case "clients":
-                        TTL = 1800;
-                        break;
-                    case "vehicles":
-                        TTL = 1800;
-                        break;
-                    case "rents":
-                        LocalDateTime startTime;
-                        LocalDateTime endTime;
-                        try {
-                            startTime = (LocalDateTime) entity.getClass().getMethod("getStartDate").invoke(entity);
-                            endTime = (LocalDateTime) entity.getClass().getMethod("getEndDate").invoke(entity);
-                        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-                            throw new RuntimeException(e);
-                        }
-
-                        TTL = (int) Duration.between(startTime, endTime).getSeconds();
-                        break;
-                    default:
-                        throw new IllegalArgumentException("Unknown collection: " + collectionName);
                 }
 
                 redisManager.setDocument(collectionName+":"+id.toString().replaceFirst("^0+(?!$)", ""), document, TTL);
@@ -201,21 +191,10 @@ public class CacheManager implements CRUDManager {
                     TTL = 1800;
                     break;
                 case "rents":
-                    LocalDateTime startTime;
-                    LocalDateTime endTime;
-                    try {
-                        startTime = (LocalDateTime) entity.getClass().getMethod("getStartDate").invoke(entity);
-                        endTime = (LocalDateTime) entity.getClass().getMethod("getEndDate").invoke(entity);
-                    } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-                        throw new RuntimeException(e);
-                    }
-
-                    TTL = (int) Duration.between(startTime, endTime).getSeconds();
-                    break;
+                    return entity;
                 default:
                     throw new IllegalArgumentException("Unknown collection: " + collectionName);
             }
-
 
             try {
                 document = new Document();
