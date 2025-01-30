@@ -1,4 +1,4 @@
-package NBD;
+package Producer;
 import org.bson.BsonInvalidOperationException;
 import org.bson.BsonReader;
 import org.bson.BsonType;
@@ -34,7 +34,7 @@ public class VehicleCodec implements Codec<Vehicle> {
 
         Vehicle vehicle;
         switch (type) {
-            case "NBD.Car":
+            case "Producer.Car":
                 name = reader.readString("name");
                 power = reader.readInt32("power");
                 rentalId = reader.readInt32("rentalId");
@@ -45,7 +45,7 @@ public class VehicleCodec implements Codec<Vehicle> {
                 //vehicle = codecRegistry.get(Car.class).decode(reader, decoderContext);
                 ((Car) vehicle).setSeats(seats);
                 break;
-            case "NBD.Truck":
+            case "Producer.Truck":
                 int loadCapacity = reader.readInt32("loadCapacity");
                 name = reader.readString("name");
                 power = reader.readInt32("power");
@@ -56,7 +56,7 @@ public class VehicleCodec implements Codec<Vehicle> {
                 //vehicle = codecRegistry.get(Truck.class).decode(reader, decoderContext);
                 ((Truck) vehicle).setLoadCapacity(loadCapacity);
                 break;
-            case "NBD.Motorbike":
+            case "Producer.Motorbike":
                 int engineCapacity = reader.readInt32("engineCapacity");
                 name = reader.readString("name");
                 power = reader.readInt32("power");

@@ -1,14 +1,15 @@
-package NBD;
+package Consumer;
+
 
 import redis.clients.jedis.*;
 import org.bson.Document;
 import java.io.IOException;
 import java.util.Properties;
 
-public class RedisManager {
-    private static JedisPooled pool;
+public class RedisManagerConsumer {
+    private static Jedis pool;
     private static final Properties property = new Properties();
-    private static final String confFile = "app.config";
+    private static final String confFile = "appConsumer.config";
 
     private void readConfig() {
         try (var fis = getClass().getClassLoader().getResourceAsStream(confFile)) {
@@ -21,12 +22,12 @@ public class RedisManager {
     public void initConnection() {
         this.readConfig();
         JedisClientConfig clientConfig = DefaultJedisClientConfig.builder().build();
-        pool = new JedisPooled(new HostAndPort(property.getProperty("app.address"),
-                Integer.parseInt(property.getProperty("app.port"))), clientConfig);
+        pool = new Jedis("localhost", 6380, clientConfig);
     }
 
-    public RedisManager() {
+    public RedisManagerConsumer() {
         this.initConnection();
+        this.testConnection();
     }
 
     public void testConnection() {

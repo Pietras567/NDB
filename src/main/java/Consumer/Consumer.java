@@ -1,4 +1,4 @@
-package NBD;
+package Consumer;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -20,7 +20,7 @@ import java.util.UUID;
 
 public class Consumer {
 
-    private final RedisManager redisManager = new RedisManager();
+    private final RedisManagerConsumer redisManager = new RedisManagerConsumer();
     public List<KafkaConsumer<UUID, String>> createConsumerGroup() {
         List<KafkaConsumer<UUID, String>> consumers = new ArrayList<>();
 

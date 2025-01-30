@@ -1,16 +1,9 @@
-package NBD;
+package Producer;
 
-import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.ProducerRecord;
 import org.bson.Document;
 import org.bson.types.ObjectId;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.lang.reflect.InvocationTargetException;
 
-import org.apache.kafka.clients.producer.ProducerConfig;
-import org.apache.kafka.common.serialization.StringSerializer;
-import java.util.Properties;
+import java.lang.reflect.InvocationTargetException;
 
 public class CacheManager implements CRUDManager {
     private static RedisManager redisManager = new RedisManager();

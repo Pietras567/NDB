@@ -1,9 +1,10 @@
 package NBD;
 
+import Consumer.Consumer;
+import Producer.*;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.bson.types.ObjectId;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Scanner;
 import java.util.UUID;
@@ -12,13 +13,7 @@ import static java.lang.System.exit;
 
 public class Main {
     public static void main(String[] args) {
-        RedisManager conn = new RedisManager();
-        conn.testConnection();
-        CacheManager cacheManager = new CacheManager();
-        RentalApi rentalApi = new RentalApi();
-
         Scanner scannerKafkaMode = new Scanner(System.in);
-
         do {
             System.out.print("Podaj tryb pracy Apache Kafka:\n" +
                     "1 - Tryb producenta\n" +
@@ -27,6 +22,9 @@ public class Main {
             int choiceMode = scannerKafkaMode.nextInt();
             switch (choiceMode) {
                 case 1:
+                    CacheManager cacheManager = new CacheManager();
+                    RentalApi rentalApi = new RentalApi();
+
                     System.out.print("Tryb pracy producenta");
 
                     System.out.println("\nWitamy w CarRental!\n");

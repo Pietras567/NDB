@@ -1,4 +1,4 @@
-package NBD;
+package Producer;
 import org.bson.codecs.pojo.annotations.BsonDiscriminator;
 
 @BsonDiscriminator

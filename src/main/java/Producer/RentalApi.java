@@ -1,4 +1,4 @@
-package NBD;
+package Producer;
 
 import com.mongodb.client.MongoDatabase;
 import java.time.LocalDateTime;
