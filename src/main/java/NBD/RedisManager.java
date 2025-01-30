@@ -1,10 +1,7 @@
 package NBD;
 
 import redis.clients.jedis.*;
-
-//import javax.swing.text.Document;
 import org.bson.Document;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 

@@ -26,9 +26,6 @@ public class Producer {
     private static final String[] RENTAL_CENTERS = {"CarRental", "JadymyRental", "ZygzakMcQueen"};
     private DatabaseApi databaseApi;
 
-    private static final LocalDateTime UUID_1_EPOCH = LocalDateTime.of(1582, 10, 15, 0, 0, 0).atOffset(ZoneOffset.UTC).toLocalDateTime();
-    private static final long UUID_TICKS_PER_SECOND = 10_000_000L;
-
     public Producer(DatabaseApi databaseApi) {
         this.databaseApi = databaseApi;
         createTopic();
