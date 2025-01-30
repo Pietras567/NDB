@@ -24,6 +24,7 @@ public class Consumer {
         consumerProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         consumerProps.put(ConsumerConfig.GROUP_ID_CONFIG, "rents");
         consumerProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092,localhost:9093,localhost:9094");
+        consumerProps.put(ConsumerConfig.ISOLATION_LEVEL_CONFIG, "read_committed");
 
         //for (int i = 0; i <= 2; i++) {
         KafkaConsumer<UUID, String> consumer = new KafkaConsumer<>(consumerProps);
