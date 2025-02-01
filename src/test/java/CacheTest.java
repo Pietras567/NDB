@@ -10,6 +10,12 @@ import java.lang.reflect.InvocationTargetException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * The CacheTest class contains unit tests for verifying the functionality of
+ * the CacheManager and RedisManager components in managing cached entities.
+ * It includes tests for adding, retrieving, updating, deleting, and
+ * managing time-to-live (TTL) for cached entities.
+ */
 public class CacheTest {
     CacheManager cacheManager = new CacheManager();
     RedisManager redisManager = new RedisManager();

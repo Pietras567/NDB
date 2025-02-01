@@ -5,6 +5,20 @@ import org.bson.types.ObjectId;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Test class for verifying the functionality of the DatabaseApi class.
+ * This class contains unit tests to ensure that the core operations of
+ * the DatabaseApi, such as insertion, updating, and deletion of entities,
+ * are working as expected.
+ *
+ * The test cases in this class validate:
+ * - Adding entities to the database.
+ * - Retrieving entities from the database.
+ * - Updating existing entities in the database.
+ * - Deleting entities from the database.
+ *
+ * The main entity used in the tests is Vehicle.
+ */
 public class DatabaseApiTest {
 
     @Test

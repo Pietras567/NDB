@@ -9,6 +9,14 @@ import org.bson.codecs.EncoderContext;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.types.ObjectId;
 
+/**
+ * The VehicleCodec class is responsible for encoding and decoding {@link Vehicle} objects into BSON format for use
+ * with MongoDB. It supports polymorphic serialization and deserialization of different vehicle subtypes such as
+ * {@link Car}, {@link Truck}, and {@link Motorbike}.
+ *
+ * This implementation utilizes a {@link CodecRegistry} to handle custom serialization logic for supported
+ * vehicle subtypes and ensures compatibility with BSON document structure.
+ */
 public class VehicleCodec implements Codec<Vehicle> {
     private final CodecRegistry codecRegistry;
 
@@ -16,6 +24,11 @@ public class VehicleCodec implements Codec<Vehicle> {
         this.codecRegistry = codecRegistry;
     }
 
+    /**
+     * Decodes a BSON document into a specific type of Vehicle object, such as Car, Truck, or Motorbike,
+     * based on the discriminator field "_t" within the document.
+     *
+     * @param reader the Bson*/
     @Override
     public Vehicle decode(BsonReader reader, DecoderContext decoderContext) {
         if (reader.getCurrentBsonType() != BsonType.DOCUMENT) {
@@ -40,7 +53,6 @@ public class VehicleCodec implements Codec<Vehicle> {
                 weight = reader.readInt32("weight");
 
                 vehicle = new Car(name, weight, power, seats);
-                //vehicle = codecRegistry.get(Car.class).decode(reader, decoderContext);
                 ((Car) vehicle).setSeats(seats);
                 break;
             case "NBD.Truck":
@@ -50,7 +62,6 @@ public class VehicleCodec implements Codec<Vehicle> {
                 weight = reader.readInt32("weight");
 
                 vehicle = new Truck(name, power, weight, loadCapacity);
-                //vehicle = codecRegistry.get(Truck.class).decode(reader, decoderContext);
                 ((Truck) vehicle).setLoadCapacity(loadCapacity);
                 break;
             case "NBD.Motorbike":
@@ -60,7 +71,6 @@ public class VehicleCodec implements Codec<Vehicle> {
                 weight = reader.readInt32("weight");
 
                 vehicle = new Motorbike(name, power, weight, engineCapacity);
-                //vehicle = codecRegistry.get(Motorbike.class).decode(reader, decoderContext);
                 ((Motorbike) vehicle).setEngineCapacity(engineCapacity);
                 break;
             default:
@@ -72,6 +82,17 @@ public class VehicleCodec implements Codec<Vehicle> {
         return vehicle;
     }
 
+    /**
+     * Encodes a {@link Vehicle} object into BSON format using the provided {@link BsonWriter}.
+     * The method writes the vehicle's properties and determines the specific type of vehicle
+     * (e.g., Car, Truck, Motorbike) based on its class. Additional fields relevant to the
+     * specific vehicle type are written as well.
+     *
+     * @param writer        the {@link BsonWriter} used to write the BSON document
+     * @param vehicle       the {@link Vehicle} instance to be encoded
+     * @param encoderContext the {@link EncoderContext} to define encoding flow
+     * @throws IllegalArgumentException if the vehicle's type is unknown
+     */
     @Override
     public void encode(BsonWriter writer, Vehicle vehicle, EncoderContext encoderContext) {
         writer.writeStartDocument();
@@ -80,8 +101,6 @@ public class VehicleCodec implements Codec<Vehicle> {
             writer.writeObjectId("_id", vehicle.getId());
         }
         writer.writeString("_t", vehicle.getClass().getSimpleName().toLowerCase());
-
-
 
         switch (vehicle.getClass().getSimpleName()) {
             case "Car":
@@ -106,17 +125,14 @@ public class VehicleCodec implements Codec<Vehicle> {
                 throw new IllegalArgumentException("Unknown vehicle type: " + vehicle.getClass().getSimpleName());
         }
 
-
-
-
-
-        // Rzutowanie kodera na typ Vehicle z wykorzystaniem CodecRegistry
-        //Codec<? super Vehicle> codec = (Codec<? super Vehicle>) codecRegistry.get(vehicle.getClass());
-        //codec.encode(writer, vehicle, encoderContext);  // Użyj zakodowanego obiektu
-
         writer.writeEndDocument();
     }
 
+    /**
+     * Provides the class type that this codec can encode and decode.
+     *
+     * @return the {@code Class} object representing the type {@link Vehicle}.
+     */
     @Override
     public Class<Vehicle> getEncoderClass() {
         return Vehicle.class;

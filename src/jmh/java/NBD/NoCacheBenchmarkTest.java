@@ -5,6 +5,14 @@ import org.openjdk.jmh.annotations.*;
 
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Benchmark test class for measuring the performance of fetching an entity
+ * from a cache when there is no existing cache entry.
+ * This class uses JMH (Java Microbenchmark Harness) annotations to define
+ * the benchmarking parameters and processes.
+ * The benchmark simulates retrieval of an entity without caching, to measure the
+ * average time taken for such operation.
+ */
 @State(Scope.Benchmark)
 public class NoCacheBenchmarkTest {
     private CacheManager cacheManager;

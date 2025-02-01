@@ -2,7 +2,6 @@ package NBD;
 
 import org.bson.types.ObjectId;
 
-import java.time.LocalDateTime;
 import java.util.Scanner;
 
 import static java.lang.System.exit;
@@ -73,7 +72,7 @@ public class Main {
 
                     Client client = cacheManager.getEntity(Client.class, "clients", clientId);
                     Vehicle vehicle = cacheManager.getEntity(Vehicle.class, "vehicles", vehicleId);
-                    rentalApi.wypozycz(vehicle, client, days);
+                    rentalApi.rent(vehicle, client, days);
                     break;
                 case 3:
                     System.out.println("Podaj id pojazdu do zwrotu : \n");
@@ -90,7 +89,7 @@ public class Main {
 
                     Vehicle returnedVehicle = cacheManager.getEntity(Vehicle.class, "vehicles", returnedVehicleId);
                     Client returningClient = cacheManager.getEntity(Client.class, "clients", returningClientId);
-                    rentalApi.oddaj(returnedVehicle, returningClient);
+                    rentalApi.returnVehicle(returnedVehicle, returningClient);
                     break;
                 case 4:
                     System.out.println("Podaj swoje imie : \n");
