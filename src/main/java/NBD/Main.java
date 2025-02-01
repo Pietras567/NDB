@@ -6,36 +6,28 @@ import java.util.UUID;
 import static java.lang.System.exit;
 
 /**
- * The Main class serves as the entry point for the CarRental application.
- * It provides an interactive console-based interface for managing vehicle rentals.
- * Users can perform operations such as viewing vehicle and client information,
- * renting vehicles, returning vehicles, and registering new clients.
+ * The Main class serves as the entry point for the CarRental application. It provides a
+ * console-based interface for users to interact with the application and perform various
+ * actions such as viewing information, renting vehicles, returning vehicles, and registering
+ * as a client.
  *
- * This class integrates with the following components:
- * - DatabaseApi: Handles persistence and retrieval of entities like vehicles,
- *   clients, and rental records.
- * - RentalApi: Manages rental operations, including renting and returning vehicles.
- * - Vehicles: Represents entities such as cars available for rent.
- * - Clients: Represents customers renting the vehicles.
- * - Rent: Represents rental transactions between clients and vehicles.
+ * Users can navigate through different functionalities by selecting options in a menu-driven
+ * format. The application communicates with a rental API and a database API to retrieve and
+ * manipulate data related to vehicles, clients, and rentals.
  *
- * The main functionality is implemented within a user-driven menu system,
- * providing options for interacting with the application.
+ * Functionalities:
+ * 1. Display Information: Users can view details about vehicles, clients, and rentals.
+ * 2. Rent a Vehicle: Users can rent a specific vehicle by providing its ID and their client ID.
+ * 3. Return a Vehicle: Users can return a rented vehicle by providing its ID and their client ID.
+ * 4. Register as a Client: Users can register as a new client by providing their name and age.
+ *
+ * The application continues in a loop until the user chooses to exit by providing an invalid
+ * input for the main menu.
  */
 public class Main {
     public static void main(String[] args) {
         DatabaseApi databaseApi = new DatabaseApi();
-
-
         RentalApi rentalApi = new RentalApi();
-        Vehicle car1 = new Car("firanka", 1500, 261, 5);
-        Vehicle car2 = new Car("zaba", 700, 30, 5);
-        Vehicle car3 = new Car("mrpolska", 1200, 161, 5);
-
-        databaseApi.addEntity(car1, "vehicles");
-        databaseApi.addEntity(car2, "vehicles");
-        databaseApi.addEntity(car3, "vehicles");
-
 
         System.out.println("\nWitamy w CarRental!\n");
         Scanner scanner = new Scanner(System.in);
