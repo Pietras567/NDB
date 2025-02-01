@@ -18,9 +18,26 @@ import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
 
+/**
+ * The Consumer class is responsible for the implementation of a Kafka consumer
+ * that listens and processes messages from Kafka topics. It provides methods
+ * to create a consumer group and consume messages from a specified Kafka topic.
+ * The consumed messages are processed and stored in a Redis database via the
+ * RedisManagerConsumer.
+ */
 public class Consumer {
-
     private final RedisManagerConsumer redisManager = new RedisManagerConsumer();
+
+    /**
+     * Creates and initializes a consumer group of Apache Kafka consumers.
+     * Each consumer in the group is configured with the necessary properties to consume
+     * messages from Kafka topics, including deserialization settings, group ID, bootstrap server
+     * addresses, and isolation level. The consumers are subscribed to the target topic and prepared
+     * for message consumption.
+     *
+     * @return a list of KafkaConsumer instances configured to consume messages with a key of type UUID
+     *         and a value of type String from the specified Kafka topic.
+     */
     public List<KafkaConsumer<UUID, String>> createConsumerGroup() {
         List<KafkaConsumer<UUID, String>> consumers = new ArrayList<>();
 
@@ -38,6 +55,13 @@ public class Consumer {
         return consumers;
     }
 
+    /**
+     * Consumes messages from an Apache Kafka topic and processes them in a continuous loop.
+     * Each consumed message is formatted, logged, and stored into a Redis database.
+     *
+     * @param consumer a KafkaConsumer instance configured to consume messages with a key of type UUID
+     *                 and a value of type String from a Kafka topic.
+     */
     public void consume(KafkaConsumer<UUID, String> consumer) {
         try {
             MessageFormat formatter = new MessageFormat("Temat {0}, partition {1}, offset {2, number, integer}, klucz {3}, wartosc {4}");
@@ -67,6 +91,13 @@ public class Consumer {
         }
     }
 
+    /**
+     * Converts a UUID into an ObjectId, provided the UUID was originally created from an ObjectId.
+     *
+     * @param uuid the UUID to convert into an ObjectId
+     * @return the corresponding ObjectId representation of the given UUID
+     * @throws IllegalArgumentException if the provided UUID was not created from an ObjectId
+     */
     public static ObjectId toObjectId(UUID uuid) {
         byte[] uuidBytes = new byte[16];
         ((ByteBuffer) ByteBuffer.allocate(16).putLong(uuid.getMostSignificantBits()).putLong(uuid.getLeastSignificantBits()).position(0))
