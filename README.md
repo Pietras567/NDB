@@ -16,7 +16,7 @@ This project is a **Car Rental Application** that uses **Cassandra** as the prim
 
 Make sure you have the following installed:
 
-1. **Java 23** or higher.
+1. **Java 17** or higher.
 2. **Gradle** 7 or higher.
 3. **Cassandra** servers running locally or use docker-compose file.
 
