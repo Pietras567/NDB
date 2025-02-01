@@ -1,22 +1,32 @@
 package NBD;
 
-import java.time.LocalDateTime;
 import java.util.Scanner;
 
 import static java.lang.System.exit;
 
+/**
+ * The Main class serves as the entry point for the CarRental application. It provides a
+ * console-based interface for users to interact with the application and perform various
+ * actions such as viewing information, renting vehicles, returning vehicles, and registering
+ * as a client.
+ *
+ * Users can navigate through different functionalities by selecting options in a menu-driven
+ * format. The application communicates with a rental API and a database API to retrieve and
+ * manipulate data related to vehicles, clients, and rentals.
+ *
+ * Functionalities:
+ * 1. Display Information: Users can view details about vehicles, clients, and rentals.
+ * 2. Rent a Vehicle: Users can rent a specific vehicle by providing its ID and their client ID.
+ * 3. Return a Vehicle: Users can return a rented vehicle by providing its ID and their client ID.
+ * 4. Register as a Client: Users can register as a new client by providing their name and age.
+ *
+ * The application continues in a loop until the user chooses to exit by providing an invalid
+ * input for the main menu.
+ */
 public class Main {
     public static void main(String[] args) {
         DatabaseApi databaseApi = new DatabaseApi();
         RentalApi rentalApi = new RentalApi();
-//        Vehicle car1 = new Car("yaris", 1500, 261, 5);
-//        Vehicle car2 = new Car("126p", 700, 30, 5);
-//        Vehicle car3 = new Car("poldon", 1200, 161, 5);
-//
-//        databaseApi.addEntity(car1);
-//        databaseApi.addEntity(car2);
-//        databaseApi.addEntity(car3);
-
 
         System.out.println("\nWitamy w CarRental!\n");
         Scanner scanner = new Scanner(System.in);
@@ -62,7 +72,7 @@ public class Main {
 
                     Client client = databaseApi.getEntity(Client.class, clientId);
                     Vehicle vehicle = databaseApi.getEntity(Vehicle.class, vehicleId);
-                    rentalApi.wypozycz(vehicle, client, days);
+                    rentalApi.rent(vehicle, client, days);
                     break;
                 case 3:
                     System.out.println("Podaj id pojazdu do zwrotu : \n");
@@ -71,7 +81,7 @@ public class Main {
                     int returningClientId = scanner.nextInt();
                     Vehicle returnedVehicle = databaseApi.getEntity(Vehicle.class, returnedVehicleId);
                     Client returningClient = databaseApi.getEntity(Client.class, returningClientId);
-                    rentalApi.oddaj(returnedVehicle, returningClient);
+                    rentalApi.returnVehicle(returnedVehicle, returningClient);
                     break;
                 case 4:
                     System.out.println("Podaj swoje imie : \n");

@@ -20,11 +20,6 @@
             <property name="jakarta.persistence.jdbc.password"
                       value="nbdpassword"/>
 
-            <!--<property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"/>-->
-
-            <!--<property name="hibernate.agroal.maxSize"
-                      value="20"/>-->
-
             <property name="hibernate.show_sql" value="false"/>
             <property name="hibernate.format_sql" value="true"/>
             <property name="hibernate.highlight_sql" value="true"/>

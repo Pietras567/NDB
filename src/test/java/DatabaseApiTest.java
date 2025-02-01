@@ -4,6 +4,11 @@ import NBD.Vehicle;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Test class for verifying the functionality of the DatabaseApi class and its operations.
+ * This class contains unit tests for CRUD operations (Create, Read, Update, Delete)
+ * involving the Vehicle and Car entities.
+ */
 public class DatabaseApiTest {
     @Test
     public void insertToDatabaseTest() {
