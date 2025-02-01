@@ -25,10 +25,16 @@ public class VehicleCodec implements Codec<Vehicle> {
     }
 
     /**
-     * Decodes a BSON document into a specific type of Vehicle object, such as Car, Truck, or Motorbike,
-     * based on the discriminator field "_t" within the document.
+     * Decodes a BSON document into a {@link Vehicle} object. The method expects the document
+     * to represent a specific type of vehicle (Car, Truck, or Motorbike) and will decode
+     * attributes unique to the respective type.
      *
-     * @param reader the Bson*/
+     * @param reader          the {@link BsonReader} used to read the BSON document
+     * @param decoderContext  the {@link DecoderContext} that defines decoding behavior
+     * @return a {@link Vehicle} instance with attributes populated from the BSON document
+     * @throws BsonInvalidOperationException if the BSON type is not a document
+     * @throws IllegalArgumentException if the vehicle type is unknown or unsupported
+     */
     @Override
     public Vehicle decode(BsonReader reader, DecoderContext decoderContext) {
         if (reader.getCurrentBsonType() != BsonType.DOCUMENT) {
