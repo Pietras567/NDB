@@ -20,15 +20,38 @@ import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.UUID;
 
+/**
+ * The Producer class is responsible for creating and managing Kafka topics as well as sending rental information data to a specific Kafka topic.
+ * It integrates with a database to fetch necessary information to format messages appropriately before publishing them to the topic.
+ */
 public class Producer {
     private static final String[] RENTAL_CENTERS = {"CarRental", "JadymyRental", "ZygzakMcQueen"};
     private DatabaseApi databaseApi;
 
+    /**
+     * Constructs a new Producer instance with the specified DatabaseApi.
+     * Initializes the database API and creates the topic for processing rents.
+     *
+     * @param databaseApi The DatabaseApi instance used for database operations.
+     */
     public Producer(DatabaseApi databaseApi) {
         this.databaseApi = databaseApi;
         createTopic();
     }
 
+    /**
+     * Creates a Kafka topic named "rents" if it does not already exist.
+     * The topic will have a configuration of 3 partitions and a replication factor of 1.
+     * This method uses the Kafka AdminClient API for topic management.
+     *
+     * It ensures the topic creation via an asynchronous API call and waits
+     * for the completion of the operation. If the topic already exists, the exception
+     * will be caught and suppressed; otherwise, any other exceptions will be thrown.
+     *
+     * Exceptions:
+     * - Throws a RuntimeException if any error occurs during the topic creation,
+     *   except for TopicExistsException.
+     */
     public static void createTopic() {
         final String ordersTopic = "rents";
         Properties props = new Properties();
@@ -51,6 +74,15 @@ public class Producer {
         }
     }
 
+    /**
+     * Sends rent information to a Kafka topic named "rents". This method serializes
+     * rent details into JSON format and uses a Kafka producer to send the data.
+     * The method ensures transactionality and retries the operation in case of
+     * transient errors.
+     *
+     * @param rent The Rent object containing the details of the rental transaction.
+     *             Includes client, vehicle, and rental period information.
+     */
     public void sendToTopic(Rent rent) {
         // create Producer properties
         String bootstrapServers = "127.0.0.1:9092";
@@ -101,6 +133,16 @@ public class Producer {
         }
     }
 
+    /**
+     * Converts an ObjectId into a UUID. The method extracts and manipulates
+     * bytes from the ObjectId to conform to the UUID specification. The generated
+     * UUID is of version 4 and IETF variant.
+     *
+     * @param objectId The ObjectId to be converted into a UUID. The ObjectId
+     *                 typically represents a unique identifier from a database
+     *                 or other system.
+     * @return The UUID generated from the given ObjectId.
+     */
     public static UUID toUUID(ObjectId objectId) {
         byte[] objectidBytes = objectId.toByteArray();
         byte[] uuidBytes = new byte[16];

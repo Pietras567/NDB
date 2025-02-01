@@ -4,6 +4,10 @@ import Producer.Vehicle;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * This test class contains unit tests for the DatabaseApi class,
+ * ensuring its functionality in handling basic CRUD (Create, Read, Update, Delete) operations.
+ */
 public class DatabaseApiTest {
 
     @Test

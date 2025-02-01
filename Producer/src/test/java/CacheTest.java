@@ -5,6 +5,10 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * The CacheTest class is responsible for testing the operations of the CacheManager and RedisManager components.
+ * It performs unit tests for entity insertion, update, deletion, and expiration (TTL) functionalities in the caching system.
+ */
 public class CacheTest {
     CacheManager cacheManager = new CacheManager();
     RedisManager redisManager = new RedisManager();

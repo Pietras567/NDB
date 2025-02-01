@@ -2,6 +2,12 @@ import Producer.Car;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+/**
+ * The VehicleTest class is a unit testing class designed to test the functionality of the Car class
+ * and its associated methods, particularly its constructors, getters, and setters.
+ *
+ * It employs JUnit testing framework to validate the expected behavior of Car instances.
+ */
 public class VehicleTest {
     public VehicleTest() {
 
