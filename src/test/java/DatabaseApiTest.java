@@ -5,6 +5,13 @@ import org.bson.types.ObjectId;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * A test suite for verifying the functionality of the DatabaseApi class.
+ *
+ * This class contains unit tests for common database operations including
+ * insertion, updating, and deletion of entities. It ensures that the behavior
+ * of the DatabaseApi is consistent and reliable.
+ */
 public class DatabaseApiTest {
 
     @Test

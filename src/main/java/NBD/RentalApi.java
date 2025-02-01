@@ -8,15 +8,26 @@ import com.mongodb.client.MongoCollection;
 import org.bson.types.ObjectId;
 import static com.mongodb.client.model.Filters.eq;
 
-
+/**
+ * The RentalApi class provides operations for managing rental-related functionalities
+ * such as renting and returning vehicles, as well as retrieving data from the database.
+ * It interacts with a MongoDB database for handling entities and events.
+ */
 public class RentalApi {
     private DatabaseApi databaseApi = new DatabaseApi();
     private MongoDatabase database = databaseApi.getDatabase();
 
-    public boolean oddaj(Vehicle vehicle, Client client) {
+    /**
+     * Handles the return process of a rented vehicle by verifying the rental status
+     * and updating the associated rental record.
+     *
+     * @param vehicle The vehicle being returned.
+     * @param client  The client attempting to return the vehicle.
+     * @return {@code true} if the vehicle was successfully returned; {@code false} otherwise.
+     */
+    public boolean returnVehicle(Vehicle vehicle, Client client) {
         try {
             ObjectId vehicleId = vehicle.getId();
-//            System.out.println(vehicleId);
             MongoCollection<Rent> rentCollection = database.getCollection("rents", Rent.class);
 
             List<Rent> list = rentCollection.find(eq("vehicle_id", vehicleId)).into(new ArrayList<>());
@@ -51,11 +62,18 @@ public class RentalApi {
         return true;
     }
 
-
-    public boolean wypozycz(Vehicle vehicle, Client client, int days) {
+    /**
+     * Handles the rental process of a vehicle for a specified client over a given number of days.
+     * Verifies the availability of the vehicle and updates rental data accordingly.
+     *
+     * @param vehicle The vehicle being rented.
+     * @param client The client renting the vehicle.
+     * @param days The number of days the client wishes to rent the vehicle.
+     * @return {@code true} if the vehicle was successfully rented; {@code false} if the vehicle is unavailable or an error occurs.
+     */
+    public boolean rent(Vehicle vehicle, Client client, int days) {
         try {
             ObjectId vehicleId = vehicle.getId();
-            System.out.println(vehicleId);
             MongoCollection<Rent> rentCollection = database.getCollection("rents", Rent.class);
             List<Rent> list = rentCollection.find(eq("vehicle_id", vehicleId)).into(new ArrayList<>());
             boolean wypozyczony = false;
@@ -71,8 +89,6 @@ public class RentalApi {
             if(!wypozyczony) {
                 System.out.println("Pojazd został wypożyczony");
                 Rent rent = new Rent(client.getId(), vehicle.getId(), LocalDateTime.now(), LocalDateTime.now().plusDays(days));
-                //rent.setClient(client);
-                //rent.setVehicle(vehicle);
                 databaseApi.addEntity(rent, "rents");
             } else {
                 return false;
@@ -84,11 +100,25 @@ public class RentalApi {
         return true;
     }
 
+    /**
+     * Retrieves all entities of a specified type from the database.
+     *
+     * @param <T>         The generic type of the entities to be retrieved.
+     * @param entityClass The {@code Class} object corresponding to the type of entities to retrieve.
+     * @return A {@code List} containing all entities of the specified type found in the database.
+     */
     public <T> List<T> getAllEntities(Class<T> entityClass) {
         MongoCollection<T> collection = database.getCollection(entityClass.getSimpleName().toLowerCase() + "s", entityClass);
         return collection.find().into(new ArrayList<>());
     }
 
+    /**
+     * Retrieves all vehicles of a specified type from the database.
+     *
+     * @param <T>         The type of vehicles to retrieve. This type must extend {@code Vehicle}.
+     * @param entityClass The {@code Class} object corresponding to the type of vehicles to retrieve.
+     * @return A {@code List} of all vehicles of the specified type found in the database.
+     */
     public <T extends Vehicle> List<T> getAllVehicles(Class<T> entityClass) {
         MongoCollection<T> collection = database.getCollection(entityClass.getSimpleName().toLowerCase() + "s", entityClass);
         return collection.find().into(new ArrayList<>());
