@@ -14,9 +14,36 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+/**
+ * DatabaseApi provides methods for initiating a database session and
+ * performing CRUD operations on various entity types within the application.
+ * It implements functionality provided by the base CRUDManager interface and integrates
+ * specifically with underlying database handling for entities such as Client, Rent, and Vehicle.
+ *
+ * This class is designed to work with Cassandra database mappings and ensures
+ * entities are properly persisted, updated, retrieved, and deleted from specific tables.
+ */
 public class DatabaseApi implements CRUDManager {
     private static CqlSession session;
 
+    /**
+     * Initializes a session to interact with a Cassandra database, configures the connection settings,
+     * creates necessary keyspaces and tables, and retrieves keyspace metadata and table configurations.
+     *
+     * The method performs the following steps:
+     * 1. Establishes a session with a Cassandra cluster using the specified contact points, data center,
+     *    and authentication credentials.
+     * 2. Creates a keyspace named "car_rental" with Simple Strategy replication and a replication factor of 3.
+     * 3. Creates tables within the "car_rental" keyspace, including:
+     *    - `clients`: A table for storing client information with a composite primary key.
+     *    - `rents`: A table for storing rental transaction information with clustering based on rental dates.
+     *    - `cars`, `trucks`, and `motorbikes`: Tables for storing various vehicle types.
+     * 4. Prints metadata about the keyspace, such as replication details and existing tables.
+     * 5. Retrieves and displays default session configuration settings, such as consistency levels.
+     *
+     * The method handles exceptions at each step to ensure that errors during keyspace or table creation
+     * or metadata retrieval are logged without interrupting session initialization.
+     */
     public void initSession() {
         session = CqlSession.builder()
                 .addContactPoint(new InetSocketAddress("cassandra1", 9042))
@@ -116,79 +143,43 @@ public class DatabaseApi implements CRUDManager {
         }
     }
 
-    public void test() {
-        try {
-            System.out.println("\n\nClient test with manual inserting and client dao");
-
-            Client client_manual = new Client("John Doe", 30);
-            System.out.println(client_manual);
-
-            session.execute(
-                    "INSERT INTO clients (client_id, name, age) VALUES (?, ?, ?)",
-                    client_manual.getId(), client_manual.getName(), client_manual.getAge());
-
-            ClientMapper mapper = new ClientMapperBuilder(session).withDefaultKeyspace("car_rental").build();
-            ClientDao clientDao = mapper.clientDao();
-
-            Client client = new Client("John Doe", 30);
-            System.out.println(client);
-
-            System.out.println("\nTest dao CRUD");
-
-            clientDao.insert(client);
-            System.out.println("\nSaved: " + client);
-
-            Client fetchedClient = clientDao.findById(client.getId());
-            System.out.println("\nFetched: " + fetchedClient);
-
-            fetchedClient.setAge(31);
-            clientDao.update(fetchedClient);
-            System.out.println("\nUpdated: " + fetchedClient);
-
-            clientDao.delete(fetchedClient);
-            System.out.println("\nDeleted: " + fetchedClient);
-
-            System.out.println("\n\nVehicle test with database api");
-            System.out.println("\nSaving test");
-            Car car = new Car("Honda Civic", 1200, 120, 4);
-            addEntity(car, "vehicles");
-
-            System.out.println("\n\nFetching test");
-            Vehicle car2 = getEntity(Vehicle.class, "vehicles", car.getId());
-            System.out.println(car);
-            System.out.println(car2);
-
-            System.out.println("\n\nUpdating test");
-
-            car2.setName("Zygzak McQueen");
-            updateEntity(car2, "vehicles");
-
-            Vehicle car3 = getEntity(Vehicle.class, "vehicles", car2.getId());
-            System.out.println(car2);
-            System.out.println(car3);
-
-            System.out.println("\n\nDeleting test");
-            deleteEntity(Vehicle.class, "vehicles", car3.getId());
-            Vehicle car4 = getEntity(Vehicle.class, "vehicles", car3.getId());
-            System.out.println(car3);
-            System.out.println(car4);
-
-
-
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
-    }
-
+    /**
+     * Constructs a new instance of the `DatabaseApi` class and initializes the database session.
+     *
+     * This constructor performs the following steps:
+     * 1. Calls the `initSession` method to establish a session with a Cassandra database.
+     * 2. Outputs a message indicating that the database connection has been successfully established.
+     * 3. Executes a statement to set the active keyspace to `car_rental`.
+     *
+     * This ensures that the `DatabaseApi` instance is ready to interact with the database
+     * upon creation.
+     */
     public DatabaseApi() {
         initSession();
         System.out.println("Database connection established.");
         session.execute("USE car_rental");
-//        this.test();
     }
 
 
+    /**
+     * Adds an entity to the specified table in the database. The method first checks
+     * whether the provided entity has a UUID assigned to it by invoking its `getId` method.
+     * If the UUID is null, a new UUID is generated and set on the entity using the `setId` method.
+     * The entity is then inserted into the designated table according to the corresponding database mapper and DAO.
+     *
+     * Supported tables:
+     * - "clients" for client entities.
+     * - "rents" for rent entities.
+     * - "vehicles" for vehicle entities (supports different vehicle types).
+     *
+     * Note: Throws a runtime exception if the table name is unsupported or if any
+     * issue occurs during data persistence.
+     *
+     * @param <T>       The type of the entity to be added.
+     * @param entity    The entity to be added to the database.
+     * @param tableName The name of the table where the entity should be added.
+     *                  Accepted values are "clients", "rents", or "vehicles".
+     */
     @Override
     public <T> void addEntity(T entity, String tableName) {
         try {
@@ -198,10 +189,8 @@ public class DatabaseApi implements CRUDManager {
                     ClientDao clientDao = clientMapper.clientDao();
 
                     if ((UUID) entity.getClass().getMethod("getId").invoke(entity) == null) {
-                        System.out.println("client_id is null, generating UUID");
                         UUID uuid = UUID.randomUUID();
                         entity.getClass().getMethod("setId", UUID.class).invoke(entity, uuid);
-                        System.out.println("New id: " + uuid);
                     }
 
                     clientDao.insert((Client) entity);
@@ -211,10 +200,8 @@ public class DatabaseApi implements CRUDManager {
                     RentDao rentDao = rentMapper.rentDao();
 
                     if ((UUID) entity.getClass().getMethod("getId").invoke(entity) == null) {
-                        System.out.println("rent_id is null, generating UUID");
                         UUID uuid = UUID.randomUUID();
                         entity.getClass().getMethod("setId", UUID.class).invoke(entity, uuid);
-                        System.out.println("New id: " + uuid);
                     }
 
                     rentDao.insert((Rent) entity);
@@ -224,25 +211,39 @@ public class DatabaseApi implements CRUDManager {
                     VehicleDao vehicleDao = vehicleMapper.vehicleDao();
                     if(entity instanceof Car) {
                         vehicleDao.insert((Car) entity);
-                        System.out.println("Saved: car");
                     } else if(entity instanceof Truck) {
                         vehicleDao.insert((Truck) entity);
-                        System.out.println("Saved: truck");
                     } else if(entity instanceof Motorbike) {
                         vehicleDao.insert((Motorbike) entity);
-                        System.out.println("Saved: motorbike");
                     }
                     break;
                 default:
                     throw new RuntimeException("Unsupported table name: " + tableName);
             }
         } catch (Exception e) {
-//            e.printStackTrace();
             throw new RuntimeException("Problem z zapisem danych.");
-        } finally {
-            System.out.println("Zakonczono dodawanie danych.");
         }
     }
+
+    /**
+     * Deletes an entity from the specified table in the database. This method uses
+     * the provided table name to determine the appropriate Data Access Object (DAO)
+     * and performs the delete operation based on the entity's UUID.
+     *
+     * Supported tables:
+     * - "clients": Deletes a Client entity.
+     * - "rents": Deletes a Rent entity.
+     * - "vehicles": Deletes a Vehicle entity, resolving the specific type (Car, Truck, or Motorbike).
+     *
+     * Note: Throws a runtime exception if the table name is unsupported, if the entity
+     * is not found, or if any issue occurs during deletion.
+     *
+     * @param <T>        The type of the entity to be deleted.
+     * @param entityClass The class of the entity type being deleted (e.g., Vehicle.class).
+     * @param tableName   The name of the table where the entity should be deleted.
+     *                    Accepted values are "clients", "rents", or "vehicles".
+     * @param id          The UUID of the entity to be deleted.
+     */
     @Override
     public <T> void deleteEntity(Class<T> entityClass, String tableName, UUID id) { // JAKO PARAMETR PODAJEMY np. Vehicle.class
         try {
@@ -288,12 +289,30 @@ public class DatabaseApi implements CRUDManager {
                     throw new RuntimeException("Unsupported table name: " + tableName);
             }
         } catch (Exception e) {
-            //e.printStackTrace();
             throw new RuntimeException("Problem z usunieciem danych");
-        } finally {
-            System.out.println("Zakonczono usuwanie danych.");
         }
     }
+
+    /**
+     * Updates an existing entity in the specified table in the database.
+     *
+     * This method determines the appropriate Data Access Object (DAO) and
+     * performs the update operation based on the provided table name. It supports
+     * different table types and resolves specific implementations based on the entity's class.
+     *
+     * Supported tables:
+     * - "clients" for updating Client entities.
+     * - "rents" for updating Rent entities.
+     * - "vehicles" for updating Vehicle entities, including Car, Truck, and Motorbike types.
+     *
+     * Note: Throws a runtime exception if the table name is unsupported or if
+     * any issue occurs during the update process.
+     *
+     * @param <T>       The type of the entity to be updated.
+     * @param entity    The entity object containing the updated information.
+     * @param tableName The name of the table where the entity should be updated.
+     *                  Accepted values are "clients", "rents", or "vehicles".
+     */
     @Override
     public <T> void updateEntity(T entity, String tableName) {
         try {
@@ -323,12 +342,29 @@ public class DatabaseApi implements CRUDManager {
                     throw new RuntimeException("Unsupported table name: " + tableName);
             }
         } catch (Exception e) {
-            //e.printStackTrace();
             throw new RuntimeException("Problem z aktualizacja danych");
-        } finally {
-            System.out.println("Zakonczono aktualizowanie danych.");
         }
     }
+
+    /**
+     * Retrieves an entity of the specified type from the database based on the table name and UUID.
+     *
+     * The method identifies the appropriate Data Access Object (DAO) to interact with the database
+     * depending on the table name. It supports fetching entities from the "clients", "rents", and
+     * "vehicles" tables. For the "vehicles" table, the method distinguishes between different vehicle
+     * types (Car, Truck, or Motorbike).
+     *
+     * If the entity could not be found or if the table name is not supported, a runtime exception
+     * is thrown.
+     *
+     * @param <T>          The type of the entity to be retrieved.
+     * @param entityClass  The class of the entity type to be retrieved (e.g., Client.class).
+     * @param tableName    The name of the table to query. Accepted values are "clients", "rents",
+     *                     or "vehicles".
+     * @param id           The UUID of the entity to retrieve.
+     * @return The entity of the specified type and UUID, or null if not found.
+     * @throws RuntimeException if the table name is unsupported or any issue occurs during retrieval.
+     */
     @Override
     public <T> T getEntity(Class<T> entityClass, String tableName, UUID id) {
         try {
@@ -364,15 +400,19 @@ public class DatabaseApi implements CRUDManager {
                     throw new RuntimeException("Unsupported table name: " + tableName);
             }
         } catch (Exception e) {
-            //e.printStackTrace();
             throw new RuntimeException("Problem z pobraniem danych");
-        } finally {
-            System.out.println("Zakonczono pobieranie danych.");
         }
-        System.out.println("Nie znaleziono zadanych danych");
         return null;
     }
 
+    /**
+     * Retrieves a collection of Rent entities associated with a specific vehicle ID from the database,
+     * ensuring duplicate entries are filtered out.
+     *
+     * @param id The UUID of the vehicle for which to retrieve rental records.
+     * @return An Iterable containing unique Rent entities associated with the specified vehicle ID,
+     *         or null if an error occurs during the retrieval process.
+     */
     @Override
     public Iterable<Rent> getRents(UUID id) {
         try {
@@ -385,12 +425,6 @@ public class DatabaseApi implements CRUDManager {
             for (Rent item : rents) {
                 list.add(item);
             }
-
-//            System.out.println("Lista: ");
-//            for (Rent r : list) {
-//                System.out.println(r);
-//            }
-//            System.out.println("Koniec");
 
             Map<UUID, Long> idCount = list.stream().collect(Collectors.groupingBy(obj -> {
                 try {
@@ -408,22 +442,28 @@ public class DatabaseApi implements CRUDManager {
                 }
             }).toList();
 
-            System.out.println("Lista przefiltrowana: ");
-            for (Rent r : filteredList) {
-                System.out.println(r);
-            }
-            System.out.println("Koniec");
-
             rents = filteredList::iterator;
 
             return rents;
         } catch (Exception e) {
             System.out.println("Napotkano problem podczas wyszukiwania wypozyczen");
-            //e.printStackTrace();
             return null;
         }
     }
 
+    /**
+     * Retrieves all entities of a specific class from a specified database table.
+     *
+     * This method fetches entities across different table mappings and removes duplicates
+     * in certain cases depending on the logic associated with the table. It ensures that
+     * aggregated results from multiple queries, such as for vehicles, are properly combined.
+     *
+     * @param <T> The type of the entity to be retrieved.
+     * @param entityClass The class of the entities to retrieve.
+     * @param tableName The name of the database table from which entities are fetched.
+     * @return An iterable collection of entities of the specified class,
+     *         or an empty list if an error occurs or the table name is not supported.
+     */
     @Override
     public <T> Iterable<T> getAllEntities(Class<T> entityClass, String tableName) {
         Iterable<T> entities = null;
@@ -443,36 +483,12 @@ public class DatabaseApi implements CRUDManager {
                     RentMapper rentMapper = new RentMapperBuilder(session).withDefaultKeyspace("car_rental").build();
                     RentDao rentDao = rentMapper.rentDao();
                     entities = (Iterable<T>) rentDao.findAll();
-//                    System.out.println("W RENTS");
-//                    entities.forEach(System.out::println);
-
-//                    System.out.println("Przed: ");
-//                    for (T r : entities) {
-//                        System.out.println(r);
-//                    }
-//                    System.out.println("Koniec");
 
                     List<T> list = new ArrayList<>();
 
                     for (T item : entities) {
-                        //System.out.println("Dodaje " + item);
                         list.add(item);
                     }
-//                    System.out.println("TESTOWANIE ID");
-//                    for (T item : list) {
-//                        try {
-//                            System.out.println("ID: " + item.getClass().getMethod("getId").invoke(item));
-//                        } catch (Exception e) {
-//                            System.out.println("Błąd podczas odczytu ID");
-//                        }
-//                    }
-//                    System.out.println("KONIEC TESTOWANIE ID");
-
-//                    System.out.println("Lista: ");
-//                    for (T r : list) {
-//                        System.out.println(r);
-//                    }
-//                    System.out.println("Koniec");
 
                     Map<UUID, Long> idCount = list.stream().collect(Collectors.groupingBy(obj -> {
                         try {
@@ -481,11 +497,6 @@ public class DatabaseApi implements CRUDManager {
                             throw new RuntimeException("Napotkano problem podczas usuwania duplikatow");
                         }
                     }, Collectors.counting()));
-                    System.out.println("MAPA");
-                    for (Map.Entry<UUID, Long> entry : idCount.entrySet()) {
-                        System.out.println(entry.getKey() + " " + entry.getValue());
-                    }
-                    System.out.println("KONIEC MAPA");
 
                     List<T> filteredList = list.stream().filter(obj -> {
                         try {
@@ -494,20 +505,9 @@ public class DatabaseApi implements CRUDManager {
                             throw new RuntimeException("Napotkano problem podczas usuwania duplikatow");
                         }
                     }).toList();
-//                    System.out.println("FILTR");
-//                    System.out.println(filteredList);
-//                    System.out.println("KONIEC FILTR");
 
                     entities = filteredList::iterator;
-//                    System.out.println("PRZED KOLEJNYM ENTITY");
-//                    System.out.println(entities);
-//                    entities.forEach(System.out::println);
 
-//                    System.out.println("Po: ");
-//                    for (T r : entities) {
-//                        System.out.println(r);
-//                    }
-//                    System.out.println("Koniec");
                     break;
                 case "vehicles":
                     VehicleMapper vehicleMapper = new VehicleMapperBuilder(session).withDefaultKeyspace("car_rental").build();
@@ -530,7 +530,6 @@ public class DatabaseApi implements CRUDManager {
             }
         } catch (Exception e) {
             System.out.println("Napotkano problem podczas wyszukiwania wszystkich encji podanej klasy");
-            //e.printStackTrace();
             return List.of();
         }
         return entities;

@@ -7,6 +7,22 @@ import com.datastax.oss.driver.api.mapper.annotations.*;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Represents the Data Access Object (DAO) interface for managing vehicle-related entities
+ * within a Cassandra database. This interface provides methods for CRUD operations
+ * (Create, Read, Update, Delete) on specific vehicle types such as Car, Truck, and Motorbike.
+ *
+ * Methods:
+ * - Insert: Persists Car, Truck, or Motorbike entities into the database.
+ * - Select: Retrieves Car, Truck, or Motorbike entities from the database, either by their
+ *   unique identifier or as a complete list.
+ * - Update: Updates properties of Car, Truck, or Motorbike entities in the database.
+ * - Delete: Removes Car, Truck, or Motorbike entities from the database.
+ *
+ * Functionality:
+ * - Supports pagination for retrieving large lists of entities.
+ * - Utilizes type-specific queries for handling data specific to individual vehicle types.
+ */
 @Dao
 public interface VehicleDao {
     @Insert

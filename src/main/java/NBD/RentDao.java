@@ -11,6 +11,11 @@ import com.datastax.oss.driver.api.mapper.annotations.Update;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Data Access Object (DAO) interface for managing rent-related operations in the database.
+ * Provides methods for inserting, retrieving, updating, and deleting rent records.
+ * It also supports querying rents by specific fields such as client ID or vehicle ID.
+ */
 @Dao
 public interface RentDao {
     @Insert

@@ -5,6 +5,23 @@ import java.util.UUID;
 
 import static java.lang.System.exit;
 
+/**
+ * The Main class serves as the entry point for the CarRental application.
+ * It provides an interactive console-based interface for managing vehicle rentals.
+ * Users can perform operations such as viewing vehicle and client information,
+ * renting vehicles, returning vehicles, and registering new clients.
+ *
+ * This class integrates with the following components:
+ * - DatabaseApi: Handles persistence and retrieval of entities like vehicles,
+ *   clients, and rental records.
+ * - RentalApi: Manages rental operations, including renting and returning vehicles.
+ * - Vehicles: Represents entities such as cars available for rent.
+ * - Clients: Represents customers renting the vehicles.
+ * - Rent: Represents rental transactions between clients and vehicles.
+ *
+ * The main functionality is implemented within a user-driven menu system,
+ * providing options for interacting with the application.
+ */
 public class Main {
     public static void main(String[] args) {
         DatabaseApi databaseApi = new DatabaseApi();
@@ -64,7 +81,7 @@ public class Main {
 
                     Client client = databaseApi.getEntity(Client.class, "clients", clientId);
                     Vehicle vehicle = databaseApi.getEntity(Vehicle.class, "vehicles", vehicleId);
-                    rentalApi.wypozycz(vehicle, client, days);
+                    rentalApi.rent(vehicle, client, days);
                     break;
                 case 3:
                     System.out.println("Podaj id pojazdu do zwrotu : \n");
@@ -73,7 +90,7 @@ public class Main {
                     UUID returningClientId = UUID.fromString(scanner.next());
                     Vehicle returnedVehicle = databaseApi.getEntity(Vehicle.class, "vehicles", returnedVehicleId);
                     Client returningClient = databaseApi.getEntity(Client.class, "clients", returningClientId);
-                    rentalApi.oddaj(returnedVehicle, returningClient);
+                    rentalApi.returnVehicle(returnedVehicle, returningClient);
                     break;
                 case 4:
                     System.out.println("Podaj swoje imie : \n");

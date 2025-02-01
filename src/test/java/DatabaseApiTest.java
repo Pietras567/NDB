@@ -6,6 +6,11 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * A test class for verifying the functionality of the {@code DatabaseApi} class,
+ * including CRUD operations and retrieval functionalities for the entities
+ * such as {@code Client}, {@code Vehicle}, and {@code Rent}.
+ */
 public class DatabaseApiTest {
 
     public void cleanup() {
@@ -118,10 +123,10 @@ public class DatabaseApiTest {
             api.deleteEntity(Rent.class, "rents", rent.getId());
         }
 
-        rentalApi.wypozycz(car, client1, 0);
+        rentalApi.rent(car, client1, 0);
         Thread.sleep(2000);
 
-        rentalApi.wypozycz(car, client2, 0);
+        rentalApi.rent(car, client2, 0);
 
         rents = api.getRents(car.getId());
         List<Rent> rentList = new ArrayList<>();
@@ -151,8 +156,8 @@ public class DatabaseApiTest {
         RentalApi rentalApi = new RentalApi();
         Car car = new Car("car_test",2900,640,4);
         Client client1 = new Client("Adrian", 30);
-        rentalApi.wypozycz(car, client1, 10);
-        rentalApi.oddaj(car, client1); // utworzenie duplikatu
+        rentalApi.rent(car, client1, 10);
+        rentalApi.returnVehicle(car, client1); // utworzenie duplikatu
         Iterable<Rent> rents = api.getRents(car.getId());
         // false bo usunelo oba duplikaty
         assertFalse(rents.iterator().hasNext());

@@ -4,10 +4,22 @@ import java.time.Instant;
 import java.util.UUID;
 
 
+/**
+ * The RentalApi class provides functionalities for renting and returning vehicles.
+ * It interacts with `DatabaseApi` to perform operations on rental records.
+ */
 public class RentalApi {
     private DatabaseApi databaseApi = new DatabaseApi();
 
-    public boolean oddaj(Vehicle vehicle, Client client) {
+    /**
+     * Processes the return of a rented vehicle. Verifies if the vehicle is currently rented,
+     * checks the association with the provided client, and updates the rent details if applicable.
+     *
+     * @param vehicle The vehicle to be returned.
+     * @param client The client attempting to return the vehicle.
+     * @return true if the return process succeeds and the rental is ended, otherwise false.
+     */
+    public boolean returnVehicle(Vehicle vehicle, Client client) {
         try {
             UUID vehicleId = vehicle.getId();
 
@@ -30,10 +42,6 @@ public class RentalApi {
                     System.out.println("Pojazd zostal zwrocony.");
                 } else {
                     System.out.println("Pojazd byl wypozyczony przez innego klienta. Nie mozesz go zwrocic.");
-                    //System.out.println(rent.getClient_id());
-                    //System.out.println(rent.getClient_id().getClass());
-                    //System.out.println(client.getId());
-                    //System.out.println(client.getId().getClass());
                     return false;
                 }
             } else {
@@ -42,14 +50,24 @@ public class RentalApi {
             }
         } catch (Exception e) {
             System.out.println("Napotkano problem podczas proby wczesniejszego zakanczania wypozyczenia.");
-            //e.printStackTrace();
             return false;
         }
         return true;
     }
 
 
-    public boolean wypozycz(Vehicle vehicle, Client client, int days) {
+    /**
+     * Attempts to rent a vehicle for a specified number of days to a given client.
+     * Checks if the vehicle is available for the provided duration and proceeds
+     * with the rental if it is. Updates the database with the rental information.
+     *
+     * @param vehicle The vehicle requested for rental.
+     * @param client The client attempting to rent the vehicle.
+     * @param days The number of days the vehicle is to be rented.
+     * @return true if the rental is successful, false if the rental fails due to
+     *         the vehicle being unavailable or an error occurring during processing.
+     */
+    public boolean rent(Vehicle vehicle, Client client, int days) {
         try {
             UUID vehicleId = vehicle.getId();
 

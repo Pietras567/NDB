@@ -2,6 +2,13 @@ import NBD.Car;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+/**
+ * The VehicleTest class contains unit tests to validate the functionality
+ * of the Car class, which extends the Vehicle class.
+ *
+ * Tests in this class include verifying the correct initialization
+ * of Car objects and the accuracy of getter and setter methods.
+ */
 public class VehicleTest {
     public VehicleTest() {
 

@@ -11,6 +11,20 @@ import com.datastax.oss.driver.api.mapper.annotations.Update;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * This interface provides Data Access Object (DAO) methods for interacting with the
+ * Client entity in the Cassandra database using the DataStax Mapper framework.
+ *
+ * Methods in this interface allow for basic CRUD operations: creating, reading, updating,
+ * and deleting Client objects in the database. Additionally, the findAll method supports
+ * retrieving multiple Client records.
+ *
+ * The methods are integrated with the database via annotations such as @Insert, @Select,
+ * @Update, @Delete, and @Query, which map the operations to the corresponding Cassandra queries.
+ *
+ * The Client entity represents a client record stored in the database. It includes
+ * attributes such as UUID (client_id), name, and age.
+ */
 @Dao
 public interface ClientDao {
     @Insert
