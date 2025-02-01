@@ -6,14 +6,30 @@ import java.util.Scanner;
 
 import static java.lang.System.exit;
 
+/**
+ * The Main class serves as the entry point for the CarRental application. It provides a
+ * console-based interface for users to interact with the application and perform various
+ * actions such as viewing information, renting vehicles, returning vehicles, and registering
+ * as a client.
+ *
+ * Users can navigate through different functionalities by selecting options in a menu-driven
+ * format. The application communicates with a rental API and a cache manager to retrieve and
+ * manipulate data related to vehicles, clients, and rentals.
+ *
+ * Functionalities:
+ * 1. Display Information: Users can view details about vehicles, clients, and rentals.
+ * 2. Rent a Vehicle: Users can rent a specific vehicle by providing its ID and their client ID.
+ * 3. Return a Vehicle: Users can return a rented vehicle by providing its ID and their client ID.
+ * 4. Register as a Client: Users can register as a new client by providing their name and age.
+ *
+ * The application continues in a loop until the user chooses to exit by providing an invalid
+ * input for the main menu.
+ */
 public class Main {
     public static void main(String[] args) {
         RedisManager conn = new RedisManager();
-        conn.testConnection();
         CacheManager cacheManager = new CacheManager();
-        //DatabaseApi databaseApi = new DatabaseApi();
         RentalApi rentalApi = new RentalApi();
-
 
         System.out.println("\nWitamy w CarRental!\n");
         Scanner scanner = new Scanner(System.in);
